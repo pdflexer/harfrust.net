@@ -31,6 +31,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>harfrust_ffi.dll</Link>
     </None>
+    <None Include="..\..\rust\target\release\libharfrust_ffi.so" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.so')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libharfrust_ffi.so</Link>
+    </None>
+    <None Include="..\..\rust\target\release\libharfrust_ffi.dylib" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.dylib')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libharfrust_ffi.dylib</Link>
+    </None>
   </ItemGroup>
 
 </Project>

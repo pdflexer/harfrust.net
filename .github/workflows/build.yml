@@ -1,0 +1,75 @@
+name: Build and Pack
+
+on:
+  push:
+    branches: [ "main", "releases/*" ]
+  pull_request:
+    branches: [ "main", "releases/*" ]
+
+jobs:
+  build-rust-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Rust (Release)
+      working-directory: ./rust
+      run: cargo build --release
+    - name: Upload Windows Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-windows
+        path: rust/target/release/harfrust_ffi.dll
+
+  pack:
+    needs: [build-rust-windows]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    # Build Linux & Generate Bindings locally to ensure fresh code
+    - name: Build Rust (Release) & Generate Bindings
+      working-directory: ./rust
+      run: cargo build --release
+
+    - name: Download Windows Binary
+      uses: actions/download-artifact@v4
+      with:
+        name: native-windows
+        path: rust/target/release
+
+    - name: List files for verification
+      run: ls -R rust/target/release
+
+    - name: Run .NET Tests
+      working-directory: ./net
+      run: dotnet test -c Release
+
+    - name: Pack NuGet
+      working-directory: ./net/HarfRust
+      run: dotnet pack -c Release
+
+    - name: Upload Linux Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-linux
+        path: rust/target/release/libharfrust_ffi.so
+
+    - name: Check for Release Branch
+      id: check_release
+      shell: bash
+      run: |
+        # Check for refs/heads/releases/X.Y.Z
+        if [[ "${{ github.ref_name }}" =~ ^releases/[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+          echo "is_valid_release=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload NuGet Package
+      if: steps.check_release.outputs.is_valid_release == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: net/HarfRust/bin/Release/*.nupkg

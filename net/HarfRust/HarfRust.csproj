@@ -12,4 +12,23 @@
     <ProjectReference Include="..\HarfRust.Bindings\HarfRust.Bindings.csproj" />
   </ItemGroup>
 
+  <!-- Native Library Packaging -->
+  <!-- Windows x64 -->
+  <ItemGroup>
+    <None Include="..\..\rust\target\release\harfrust_ffi.dll" Condition="Exists('..\..\rust\target\release\harfrust_ffi.dll')">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/win-x64/native/harfrust_ffi.dll</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Linux x64 -->
+  <ItemGroup>
+    <None Include="..\..\rust\target\release\libharfrust_ffi.so" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.so')">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/linux-x64/native/libharfrust_ffi.so</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
