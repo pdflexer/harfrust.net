@@ -1,0 +1,15 @@
+# Generated files
+/target/
+
+# Cargo.lock for library crates
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
