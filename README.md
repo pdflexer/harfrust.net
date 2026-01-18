@@ -50,6 +50,30 @@ foreach (var pos in result.GlyphPositions)
 }
 ```
 
+### Understanding Glyph Positioning
+
+When rendering text, two key metrics determine where each glyph is drawn:
+
+- **XAdvance (Advance Width)**: The distance the "pen" or cursor moves *after* drawing the glyph. This determines the start position of the *next* glyph. It corresponds to the logical width of the character including spacing.
+- **XOffset**: A visual shift applied to the glyph relative to the current pen position. This shifts where the glyph ink is drawn but *does not* affect the pen position for subsequent glyphs.
+
+#### Diagram
+
+```text
+      Current Pen Position (Origin)
+      |
+      +-------------------------> [ Glyph Ink Drawn Here ]
+      |        XOffset
+      |
+      |
+      |------------------------------------------------------> Next Pen Position
+                           XAdvance
+```
+
+In most cases (e.g., standard Latin text), `XOffset` is 0. It is commonly used for:
+- **Mark Positioning**: Adjusting the position of accents or combining marks relative to the base character.
+- **Improved Kerning**: Fine-tuning visual placement without changing logical flow (though usually `XAdvance` is adjusted for kerning).
+
 ### Font Fallback
 
 Handle complex text mixing multiple scripts (e.g., Latin + Emoji) automatically.

@@ -14,9 +14,18 @@ public class HarfRustShapingTests
         // Try to find a system font for testing
         var possiblePaths = new[]
         {
+            // Windows
             @"C:\Windows\Fonts\arial.ttf",
             @"C:\Windows\Fonts\segoeui.ttf",
             @"C:\Windows\Fonts\tahoma.ttf",
+            // Linux (Ubuntu/Debian standard paths)
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+            // macOS
+            "/Library/Fonts/Arial.ttf",
+            "/System/Library/Fonts/Supplemental/Arial.ttf", 
+            "/System/Library/Fonts/Helvetica.ttc"
         };
         
         foreach (var path in possiblePaths)
