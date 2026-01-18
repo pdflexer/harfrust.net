@@ -197,7 +197,6 @@ pub unsafe extern "C" fn harfrust_buffer_add_utf16(
     }
 
     let slice = unsafe { std::slice::from_raw_parts(text, len as usize) };
-    let slice = unsafe { std::slice::from_raw_parts(text, len as usize) };
     let buffer_ref = unsafe { &mut *buffer };
     
     let mut cluster = 0;
