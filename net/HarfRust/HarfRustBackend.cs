@@ -11,7 +11,7 @@ public static class HarfRustBackend
 
     /// <summary>
     /// Gets or sets the current backend for the current async context.
-    /// Defaults to the FFI backend if not set.
+    /// Defaults to the Native backend if not set.
     /// </summary>
     public static IHarfRustBackend Current
     {

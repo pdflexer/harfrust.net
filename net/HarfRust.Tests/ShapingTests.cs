@@ -3,11 +3,11 @@ using Xunit;
 namespace HarfRust.Tests;
 
 /// <summary>
-/// Shaping tests using the FFI (native) backend.
+/// Shaping tests using the Native backend.
 /// </summary>
-public class FfiShapingTests : ShapingTestsBase<FfiBackendFixture>
+public class NativeShapingTests : ShapingTestsBase<NativeBackendFixture>
 {
-    public FfiShapingTests(FfiBackendFixture fixture) : base(fixture) { }
+    public NativeShapingTests(NativeBackendFixture fixture) : base(fixture) { }
 }
 
 

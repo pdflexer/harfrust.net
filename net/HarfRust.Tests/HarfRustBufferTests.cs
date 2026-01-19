@@ -2,9 +2,9 @@ using Xunit;
 
 namespace HarfRust.Tests;
 
-public class FfiBufferTests : BufferTestsBase<FfiBackendFixture>
+public class NativeBufferTests : BufferTestsBase<NativeBackendFixture>
 {
-    public FfiBufferTests(FfiBackendFixture fixture) : base(fixture) { }
+    public NativeBufferTests(NativeBackendFixture fixture) : base(fixture) { }
 }
 
 public class WasmBufferTests : BufferTestsBase<WasmBackendFixture>

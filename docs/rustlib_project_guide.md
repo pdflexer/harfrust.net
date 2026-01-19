@@ -4,7 +4,7 @@ This document outlines the recommended structure and implementation checklist fo
 
 ## 1. Project Structure
 
-A clean repository structure separates the Native (Rust) and Managed (.NET) concerns while enabling multiple backends (Native FFI & Wasm) and easy cross-compilation.
+A clean repository structure separates the Native (Rust) and Managed (.NET) concerns while enabling multiple backends (Native & Wasm) and easy cross-compilation.
 
 ```text
 root/
@@ -71,7 +71,7 @@ root/
 
 ## 3. Testing Strategy
  
- To ensure consistency across multiple backends (Native FFI and Wasm), use a shared test suite based on xUnit Class Fixtures.
+ To ensure consistency across multiple backends (Native and Wasm), use a shared test suite based on xUnit Class Fixtures.
  
  ### Fixture Pattern
  

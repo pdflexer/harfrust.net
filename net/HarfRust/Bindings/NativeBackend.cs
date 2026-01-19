@@ -3,12 +3,12 @@ using HarfRust.Bindings;
 namespace HarfRust.Bindings;
 
 /// <summary>
-/// FFI (native) backend for HarfRust using P/Invoke.
+/// Native backend for HarfRust using P/Invoke.
 /// </summary>
 public sealed class NativeBackend : IHarfRustBackend
 {
     /// <summary>
-    /// Singleton instance of the FFI backend.
+    /// Singleton instance of the Native backend.
     /// </summary>
     public static NativeBackend Instance { get; } = new();
 

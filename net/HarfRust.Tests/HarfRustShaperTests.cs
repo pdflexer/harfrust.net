@@ -6,9 +6,9 @@ using HarfRust;
 
 namespace HarfRust.Tests;
 
-public class FfiShaperTests : ShaperTestsBase<FfiBackendFixture>
+public class NativeShaperTests : ShaperTestsBase<NativeBackendFixture>
 {
-    public FfiShaperTests(FfiBackendFixture fixture) : base(fixture) { }
+    public NativeShaperTests(NativeBackendFixture fixture) : base(fixture) { }
 }
 
 public class WasmShaperTests : ShaperTestsBase<WasmBackendFixture>

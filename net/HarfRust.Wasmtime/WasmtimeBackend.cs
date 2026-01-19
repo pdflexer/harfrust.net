@@ -16,14 +16,18 @@ public sealed class WasmtimeBackend : IHarfRustBackend, IDisposable
     private readonly global::Wasmtime.Linker _linker;
     private readonly WasmContext _context;
     private readonly IHarfRustBackend _previousBackend;
+
     private bool _disposed;
+    private readonly bool _disposeEngine;
 
     /// <summary>
     /// Creates a new Wasmtime backend using the embedded WASM module.
     /// </summary>
     public WasmtimeBackend()
     {
+
         _engine = new global::Wasmtime.Engine();
+        _disposeEngine = true;
         
         // Load embedded WASM module
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -53,7 +57,61 @@ public sealed class WasmtimeBackend : IHarfRustBackend, IDisposable
     /// <param name="wasmPath">Path to the harfrust_ffi.wasm file.</param>
     public WasmtimeBackend(string wasmPath)
     {
+
         _engine = new global::Wasmtime.Engine();
+        _disposeEngine = true;
+        _module = WasmModule.FromFile(_engine, wasmPath);
+        _linker = new global::Wasmtime.Linker(_engine);
+        _linker.DefineWasi();
+
+        _context = new WasmContext(this);
+        
+        _previousBackend = HarfRustBackend.Current;
+        HarfRustBackend.Current = this;
+
+    }
+
+    /// <summary>
+    /// Creates a new Wasmtime backend using an existing Wasmtime Engine and the embedded WASM module.
+    /// </summary>
+    /// <param name="engine">The existing Wasmtime Engine to use.</param>
+    public WasmtimeBackend(global::Wasmtime.Engine engine)
+    {
+        _engine = engine;
+        _disposeEngine = false;
+
+        // Load embedded WASM module
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream("harfrust_ffi.wasm")
+            ?? throw new InvalidOperationException("Embedded harfrust_ffi.wasm not found.");
+        
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        var wasmBytes = ms.ToArray();
+        
+        _module = WasmModule.FromBytes(_engine, "harfrust", wasmBytes);
+        _linker = new global::Wasmtime.Linker(_engine);
+        
+        // Add WASI support for the module
+        _linker.DefineWasi();
+        
+        // Create shared context
+        _context = new WasmContext(this);
+        
+        _previousBackend = HarfRustBackend.Current;
+        HarfRustBackend.Current = this;
+    }
+
+    /// <summary>
+    /// Creates a new Wasmtime backend using an existing Wasmtime Engine and a WASM file path.
+    /// </summary>
+    /// <param name="engine">The existing Wasmtime Engine to use.</param>
+    /// <param name="wasmPath">Path to the harfrust_ffi.wasm file.</param>
+    public WasmtimeBackend(global::Wasmtime.Engine engine, string wasmPath)
+    {
+        _engine = engine;
+        _disposeEngine = false;
+
         _module = WasmModule.FromFile(_engine, wasmPath);
         _linker = new global::Wasmtime.Linker(_engine);
         _linker.DefineWasi();
@@ -121,7 +179,11 @@ public sealed class WasmtimeBackend : IHarfRustBackend, IDisposable
         {
             _context.Dispose();
             _module.Dispose();
-            _engine.Dispose();
+
+            if (_disposeEngine)
+            {
+                _engine.Dispose();
+            }
             HarfRustBackend.Current = _previousBackend;
             _disposed = true;
         }

@@ -6,7 +6,7 @@ HarfRust.NET is a high-performance .NET wrapper for the `harfrust` text shaping 
 
 ```bash
 dotnet add package HarfRust
-# Optional: Add native runtimes for default FFI backend (Required if using FFI)
+# Optional: Add native runtimes for default Native backend (Required if using Native backend)
 dotnet add package HarfRust.Native
 # Optional: Add Wasmtime backend
 dotnet add package HarfRust.Wasmtime
@@ -303,7 +303,7 @@ var indices = TextAnalyzer.GetTextElementIndices(text);  // [0, 1, 9] char posit
 
 HarfRust.NET supports multiple backends for text shaping.
 
-### 1. FFI Backend (Default)
+### 1. Native Backend (Default)
 Uses native `harfrust` binaries via P/Invoke. 
 - **Requires**: `HarfRust.Native` package referenced in your project.
 - **Performance**: Fastest.
@@ -322,7 +322,7 @@ You can switch the global backend for the current async context using `HarfRustB
 ```csharp
 using HarfRust.Wasmtime;
 
-// Use FFI by default (if Runtime.Ffi is installed)
+// Use Native backend by default (if HarfRust.Native is installed)
 using var fontFfi = HarfRustFont.FromFile("font.ttf");
 
 // Switch to WASM backend
@@ -335,7 +335,7 @@ using (new WasmtimeBackend()) // WasmtimeBackend automatically sets itself as Cu
     // Shaping happens in WASM
     var result = fontWasm.Shape(bufferWasm);
 }
-// Automatically reverts to FFI backend after disposal
+// Automatically reverts to Native backend after disposal
 ```
 
 Alternatively, pass the backend explicitly:
@@ -343,6 +343,21 @@ Alternatively, pass the backend explicitly:
 ```csharp
 using var wasmBackend = new WasmtimeBackend();
 using var font = HarfRustFont.FromFile("font.ttf", wasmBackend);
+```
+
+### Sharing Wasmtime Engine
+
+You can share the `Wasmtime.Engine` across multiple `WasmtimeBackend` instances to reduce overhead (sharing JIT caches). The backend will **not** dispose the external engine; you are responsible for its lifecycle.
+
+```csharp
+using Wasmtime;
+
+// Create a shared engine
+using var engine = new Engine();
+
+// Create multiple backends sharing the engine
+using var backend1 = new WasmtimeBackend(engine);
+using var backend2 = new WasmtimeBackend(engine);
 ```
 
 ---
