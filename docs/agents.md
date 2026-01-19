@@ -2,13 +2,21 @@
 
 HarfRust.NET is a high-performance .NET wrapper for the `harfrust` text shaping engine (a Rust port of HarfBuzz). Use this library to convert Unicode text into positioned glyphs for rendering.
 
+## Installation
+
+```bash
+dotnet add package HarfRust
+```
+
 ## Core Components
 
 | Class | Description | Lifecycle |
 |-------|-------------|-----------|
-| `HarfRustFont` | Represents a font file (TTF/OTF). | `IDisposable` - Dispose when done. |
-| `HarfRustBuffer` | Holds input text and shaping properties. | `IDisposable` - Consumed by `Shape()`. |
-| `HarfRustGlyphBuffer` | Contains the shaping result (glyphs & positions). | `IDisposable` - Dispose when done. |
+| `HarfRustFont` | Represents a loaded font file (TTF/OTF/TTC). | `IDisposable` – Dispose when done. |
+| `HarfRustBuffer` | Holds input text and shaping properties. | `IDisposable` – Consumed by `Shape()`. |
+| `HarfRustGlyphBuffer` | Contains the shaping result (glyphs & positions). | `IDisposable` – Dispose when done. |
+| `HarfRustShaper` | Static class for advanced shaping with font fallback. | Static – No lifecycle management. |
+| `TextAnalyzer` | Static utilities for grapheme cluster / Text Element mapping. | Static – No lifecycle management. |
 
 ## Quick Start
 
@@ -33,14 +41,263 @@ foreach (var info in result.GlyphInfos)
 }
 foreach (var pos in result.GlyphPositions)
 {
-    Console.WriteLine($"Advance: {pos.XAdvance}, Offset: {pos.XOffset}");
+    Console.WriteLine($"Advance: {pos.XAdvance}, Offset: ({pos.XOffset}, {pos.YOffset})");
 }
 ```
 
-## Advanced Usage
+---
 
-### 1. explicit Configuration
-Set properties manually for complex scripts or to override auto-detection.
+## API Reference
+
+### `HarfRustFont`
+
+Represents a loaded font for text shaping. Owns a copy of font data internally.
+
+#### Constructors & Factory Methods
+
+| Method | Description |
+|--------|-------------|
+| `HarfRustFont(byte[] data)` | Create from TTF/OTF bytes. |
+| `HarfRustFont(byte[] data, int index)` | Create from font bytes at a specific index (for TTC collections). |
+| `HarfRustFont.FromFile(string path)` | Load font from file path. |
+| `HarfRustFont.FromFile(string path, int index)` | Load from TTC/OTC collection at specific index. |
+| `HarfRustFont.FromStream(Stream stream)` | Load font from stream (reads to memory). |
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `HarfRustGlyphBuffer Shape(HarfRustBuffer buffer, Feature[]? features = null, Variation[]? variations = null)` | Shape text in buffer and return result. **Consumes the buffer.** |
+| `void Dispose()` | Release native resources. |
+
+#### Exceptions
+- `ArgumentNullException` – If data/path is null.
+- `ArgumentException` – If data is invalid or index is out of range.
+- `FileNotFoundException` – If file path doesn't exist.
+
+---
+
+### `HarfRustBuffer`
+
+Accumulates text and shaping properties before shaping.
+
+#### Constructor
+
+```csharp
+var buffer = new HarfRustBuffer();
+```
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Direction` | `Direction` | Get/set text direction. |
+| `Script` | `uint` | Get/set ISO 15924 script tag. Use `CreateScriptTag()`. |
+| `Length` | `int` | Number of characters in the buffer. |
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `void AddString(string text)` | Add text to the buffer. |
+| `void Clear()` | Clear all content, reset for reuse. |
+| `void SetLanguage(string language)` | Set BCP 47 language tag (e.g., `"en"`, `"zh-Hans"`). |
+| `void GuessSegmentProperties()` | Auto-detect and set direction, script, language from buffer content. |
+| `static uint CreateScriptTag(string tag)` | Convert 4-char script tag (e.g., `"Latn"`) to uint. |
+| `void Dispose()` | Release native resources. |
+
+#### Exceptions
+- `ObjectDisposedException` – If used after disposal.
+- `InvalidOperationException` – If used after being consumed by `Shape()`.
+- `ArgumentException` – For invalid language tags.
+
+---
+
+### `HarfRustGlyphBuffer`
+
+The result of text shaping, containing glyph IDs and positions.
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Length` | `int` | Number of glyphs in the result. |
+| `GlyphInfos` | `ReadOnlySpan<GlyphInfo>` | Span of glyph information. Valid only while buffer is not disposed. |
+| `GlyphPositions` | `ReadOnlySpan<GlyphPosition>` | Span of glyph positions. Valid only while buffer is not disposed. |
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `HarfRustBuffer IntoBuffer()` | Convert back to a reusable `HarfRustBuffer`. Disposes this glyph buffer. |
+| `void Dispose()` | Release native resources. |
+
+---
+
+### `GlyphInfo` (struct)
+
+Information about a shaped glyph.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `GlyphId` | `uint` | The glyph ID in the font. `0` indicates a missing glyph (.notdef). |
+| `Cluster` | `uint` | The cluster index (position in original text). Maps glyphs to source characters. |
+
+---
+
+### `GlyphPosition` (struct)
+
+Position information for a shaped glyph.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `XAdvance` | `int` | Horizontal advance after drawing (pen movement for next glyph). |
+| `YAdvance` | `int` | Vertical advance (for vertical text). |
+| `XOffset` | `int` | Horizontal offset for drawing (visual shift, doesn't affect pen). |
+| `YOffset` | `int` | Vertical offset for drawing. |
+
+**Units**: All values are in font design units. Divide by font's units-per-em and multiply by point size to get real dimensions.
+
+---
+
+### `Direction` (enum)
+
+Text direction for shaping.
+
+| Value | Description |
+|-------|-------------|
+| `Invalid` (0) | Initial, unset direction. |
+| `LeftToRight` (4) | Left-to-right text (Latin, Cyrillic, etc.). |
+| `RightToLeft` (5) | Right-to-left text (Arabic, Hebrew). |
+| `TopToBottom` (6) | Top-to-bottom text (some CJK modes). |
+| `BottomToTop` (7) | Bottom-to-top text. |
+
+---
+
+### `Feature` (struct)
+
+OpenType feature settings.
+
+#### Constructor
+
+```csharp
+Feature(string tag, uint value = 1)           // Applies to entire buffer
+Feature(string tag, uint value, uint start, uint end)  // Applies to range [start, end]
+```
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Tag` | `uint` | OpenType feature tag. |
+| `Value` | `uint` | 0 = disabled, 1 = enabled. |
+| `Start` | `uint` | Start index (0 = beginning). |
+| `End` | `uint` | End index (`uint.MaxValue` = entire text). |
+
+#### Factory Methods
+
+| Method | Description |
+|--------|-------------|
+| `Feature.StandardLigatures(bool enable)` | `liga` – fi, fl, etc. |
+| `Feature.DiscretionaryLigatures(bool enable)` | `dlig` – decorative ligatures. |
+| `Feature.Kerning(bool enable)` | `kern` – pair-wise spacing. |
+| `Feature.SmallCaps(bool enable)` | `smcp` – small capitals. |
+| `Feature.StylisticSet(int setIndex, bool enable)` | `ss01`-`ss20` – stylistic alternates. |
+
+#### Example: Custom Tag
+
+```csharp
+var oldstyleFigures = new Feature("onum", 1);  // Enable old-style numerals
+```
+
+---
+
+### `Variation` (struct)
+
+Variable font axis settings.
+
+#### Constructor
+
+```csharp
+Variation(string tag, float value)
+```
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Tag` | `uint` | Axis tag (e.g., `wght`). |
+| `Value` | `float` | Axis value. |
+
+#### Factory Methods
+
+| Method | Axis Tag | Typical Range |
+|--------|----------|---------------|
+| `Variation.Weight(float value)` | `wght` | 100 (Thin) – 900 (Black) |
+| `Variation.Width(float value)` | `wdth` | 50 (Ultra-Condensed) – 200 (Ultra-Expanded) |
+| `Variation.Slant(float value)` | `slnt` | -90 to 90 degrees |
+| `Variation.OpticalSize(float value)` | `opsz` | Point size (e.g., 12, 72) |
+| `Variation.Italic(float value)` | `ital` | 0 (Roman) – 1 (Italic) |
+
+---
+
+### `HarfRustShaper`
+
+Static class for advanced shaping with font fallback.
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `ShapedGlyph[] ShapeWithFallback(string text, HarfRustFont primaryFont, IEnumerable<HarfRustFont>? fallbackFonts, Feature[]? features = null, Variation[]? variations = null)` | Shape text, using fallback fonts for missing glyphs (GlyphId 0). |
+
+**Note**: Returns `ShapedGlyph[]`, not `HarfRustGlyphBuffer`. Each glyph tracks which font it came from.
+
+---
+
+### `ShapedGlyph` (struct)
+
+A glyph from `ShapeWithFallback()` with its source font.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `GlyphId` | `uint` | Glyph ID in the font. |
+| `Cluster` | `uint` | Cluster index in original text. |
+| `XAdvance` | `int` | Horizontal advance. |
+| `YAdvance` | `int` | Vertical advance. |
+| `XOffset` | `int` | Horizontal offset. |
+| `YOffset` | `int` | Vertical offset. |
+| `Font` | `HarfRustFont` | The font used to shape this glyph. |
+
+---
+
+### `TextAnalyzer`
+
+Static utilities for working with grapheme clusters (Text Elements).
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `int CountTextElements(string text)` | Count visual characters (grapheme clusters). |
+| `List<int> GetTextElementIndices(string text)` | Get char indices where each grapheme starts. |
+| `int GetTextElementIndexFromCharIndex(string text, int charIndex)` | Map char index → grapheme index. |
+| `int GetCharIndexFromTextElementIndex(string text, int elementIndex)` | Map grapheme index → char index. |
+
+**Use Case**: Mapping cluster values from `GlyphInfo` to user-visible characters.
+
+```csharp
+// Example: "👨‍👩‍👧" is one grapheme but multiple chars
+var text = "A👨‍👩‍👧B";
+var count = TextAnalyzer.CountTextElements(text);  // 3 visual characters
+var indices = TextAnalyzer.GetTextElementIndices(text);  // [0, 1, 9] char positions
+```
+
+---
+
+## Advanced Usage Examples
+
+### 1. Explicit Direction/Script/Language
 
 ```csharp
 using var buffer = new HarfRustBuffer();
@@ -48,44 +305,49 @@ buffer.AddString("مرحبا");
 buffer.Direction = Direction.RightToLeft;
 buffer.Script = HarfRustBuffer.CreateScriptTag("Arab");
 buffer.SetLanguage("ar");
+
+using var result = font.Shape(buffer);
 ```
 
-### 2. OpenType Features
-Enable/disable features like ligatures (`liga`), kerning (`kern`), etc.
+### 2. OpenType Features (Ligatures, Small Caps)
 
 ```csharp
 var features = new[] 
 { 
-    Feature.StandardLigatures(false), // Disable standard ligatures
-    Feature.SmallCaps(true)           // Enable small caps
+    Feature.StandardLigatures(false),  // Disable "fi" ligatures
+    Feature.SmallCaps(true),           // Enable small caps
+    Feature.StylisticSet(3, true)      // Enable stylistic set 3
 };
 
 using var result = font.Shape(buffer, features);
 ```
 
 ### 3. Variable Fonts
-Set variation axes like weight (`wght`) or width (`wdth`).
 
 ```csharp
 var variations = new[]
 {
-    Variation.Weight(700f), // Bold
-    Variation.Width(85f)    // Condensed
+    Variation.Weight(700f),      // Bold
+    Variation.Width(85f),        // Condensed
+    Variation.OpticalSize(24f)   // Optimize for 24pt display
 };
 
 using var result = font.Shape(buffer, variations: variations);
 ```
 
-### 4. Font Fallback
-Automatically use secondary fonts when glyphs are missing in the primary font.
+### 4. Font Fallback (Mixed Scripts)
 
 ```csharp
 var primary = HarfRustFont.FromFile("arial.ttf");
 var emoji = HarfRustFont.FromFile("seguiemj.ttf");
+var cjk = HarfRustFont.FromFile("notosanscjk.ttf");
 
-// "A" maps to Arial, "😀" maps to Emoji
-// Returns ShapedGlyph[] (not HarfRustGlyphBuffer)
-var glyphs = HarfRustShaper.ShapeWithFallback("A😀", primary, new[] { emoji });
+// Glyphs missing in Arial fall back to emoji, then CJK
+var glyphs = HarfRustShaper.ShapeWithFallback(
+    "Hello 😀 你好",
+    primary,
+    new[] { emoji, cjk }
+);
 
 foreach (var g in glyphs)
 {
@@ -93,13 +355,70 @@ foreach (var g in glyphs)
 }
 ```
 
+### 5. Buffer Reuse
+
+```csharp
+using var buffer = new HarfRustBuffer();
+buffer.AddString("First");
+buffer.GuessSegmentProperties();
+
+using var result1 = font.Shape(buffer);  // Buffer consumed here
+// Process result1...
+
+// Get buffer back for reuse
+using var buffer2 = result1.IntoBuffer();  // result1 is now disposed
+buffer2.AddString("Second");
+buffer2.GuessSegmentProperties();
+
+using var result2 = font.Shape(buffer2);
+```
+
+### 6. Font Collections (TTC files)
+
+```csharp
+// Load specific font from a TTC collection
+using var font = HarfRustFont.FromFile("msgothic.ttc", index: 1);
+```
+
+---
+
+## Understanding Glyph Positioning
+
+When rendering text, two key metrics determine where each glyph is drawn:
+
+- **XAdvance**: Distance the pen moves *after* drawing the glyph. Determines start of next glyph.
+- **XOffset**: Visual shift of glyph ink relative to pen. Does *not* move pen.
+
+```
+      Pen Position
+      |
+      +---(XOffset)---> [ Glyph Ink ]
+      |
+      |-----(XAdvance)--------------> Next Pen Position
+```
+
+In most Latin text, `XOffset` is 0. Common uses:
+- **Combining marks**: Position accents over base characters.
+- **Kerning adjustments**: Fine-tune visual placement.
+
+---
+
 ## Best Practices
 
-*   **Resource Management**: Always use `using` statements. These objects wrap native handles.
-*   **Buffer Reuse**: `Shape()` consumes the buffer. To reuse the allocation, use `result.IntoBuffer()`:
-    ```csharp
-    using var result = font.Shape(buffer);
-    // Process result...
-    using var reusedBuffer = result.IntoBuffer(); // Get fresh buffer
-    ```
-*   **Performance**: Reuse `HarfRustFont` instances across multiple shaping calls.
+- **Always use `using`**: All core types wrap native handles and must be disposed.
+- **Buffer consumption**: `Shape()` consumes the buffer. Use `IntoBuffer()` to reclaim it.
+- **Reuse fonts**: `HarfRustFont` is expensive to create; share across shaping calls.
+- **Check for GlyphId 0**: Indicates missing glyph (.notdef). Use font fallback or substitution.
+- **Position units**: Values are in font design units. Scale by `point_size / units_per_em`.
+
+---
+
+## Error Handling
+
+| Exception | Common Causes |
+|-----------|---------------|
+| `ObjectDisposedException` | Using disposed font/buffer. |
+| `InvalidOperationException` | Using buffer after it was consumed by `Shape()`. |
+| `ArgumentNullException` | Null text, data, or path. |
+| `ArgumentException` | Invalid font data, empty data, or invalid language/script tag. |
+| `FileNotFoundException` | Font file path doesn't exist. |
