@@ -1,0 +1,14 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  HarfRust.Native -> C:\source\github\harfrust.net\net\HarfRust.Native\bin\Debug\net10.0\HarfRust.Native.dll
+  HarfRust -> C:\source\github\harfrust.net\net\HarfRust\bin\Debug\net10.0\HarfRust.dll
+C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmBuffer.cs(55,17): warning CS0219: The variable 'result' is assigned but its value is never used [C:\source\github\harfrust.net\net\HarfRust.Wasmtime\HarfRust.Wasmtime.csproj::TargetFramework=net10.0]
+  HarfRust.Wasmtime -> C:\source\github\harfrust.net\net\HarfRust.Wasmtime\bin\Debug\net10.0\HarfRust.Wasmtime.dll
+  HarfRust.Tests -> C:\source\github\harfrust.net\net\HarfRust.Tests\bin\Debug\net10.0\HarfRust.Tests.dll
+Test run for C:\source\github\harfrust.net\net\HarfRust.Tests\bin\Debug\net10.0\HarfRust.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    93, Skipped:     0, Total:    93, Duration: 174 ms - HarfRust.Tests.dll (net10.0)

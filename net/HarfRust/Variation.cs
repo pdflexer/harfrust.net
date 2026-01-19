@@ -1,53 +1,53 @@
 namespace HarfRust;
 
 /// <summary>
-/// Defines a variable font axis setting.
+/// Variable font axis setting.
 /// </summary>
-public struct Variation
+public readonly struct Variation
 {
     /// <summary>
-    /// The axis tag (e.g. "wght', "wdth").
+    /// The variation axis tag as a 4-byte value.
     /// </summary>
-    public uint Tag { get; set; }
+    public readonly uint Tag;
 
     /// <summary>
-    /// The value for the axis.
+    /// The variation value (in design units).
     /// </summary>
-    public float Value { get; set; }
+    public readonly float Value;
 
     /// <summary>
-    /// Creates a new variation setting.
+    /// Creates a variation from a 4-character tag string.
     /// </summary>
-    /// <param name="tag">The 4-character axis tag (e.g. "wght").</param>
-    /// <param name="value">The value.</param>
     public Variation(string tag, float value)
     {
-        Tag = HarfRustBuffer.CreateScriptTag(tag);
+        if (tag == null || tag.Length != 4)
+            throw new ArgumentException("Tag must be exactly 4 characters.", nameof(tag));
+
+        Tag = ((uint)tag[0] << 24) | ((uint)tag[1] << 16) | ((uint)tag[2] << 8) | (uint)tag[3];
         Value = value;
     }
 
     /// <summary>
-    /// Creates a Weight ("wght") variation.
+    /// Creates a variation from a raw tag value.
     /// </summary>
-    public static Variation Weight(float value) => new Variation("wght", value);
+    public Variation(uint tag, float value)
+    {
+        Tag = tag;
+        Value = value;
+    }
 
-    /// <summary>
-    /// Creates a Width ("wdth") variation.
-    /// </summary>
-    public static Variation Width(float value) => new Variation("wdth", value);
+    /// <summary>Create a weight variation ('wght').</summary>
+    public static Variation Weight(float value) => new("wght", value);
 
-    /// <summary>
-    /// Creates a Slant ("slnt") variation.
-    /// </summary>
-    public static Variation Slant(float value) => new Variation("slnt", value);
+    /// <summary>Create a width variation ('wdth').</summary>
+    public static Variation Width(float value) => new("wdth", value);
 
-    /// <summary>
-    /// Creates an Optical Size ("opsz") variation.
-    /// </summary>
-    public static Variation OpticalSize(float value) => new Variation("opsz", value);
+    /// <summary>Create a slant variation ('slnt').</summary>
+    public static Variation Slant(float value) => new("slnt", value);
 
-    /// <summary>
-    /// Creates an Italic ("ital") variation.
-    /// </summary>
-    public static Variation Italic(float value) => new Variation("ital", value);
+    /// <summary>Create an italic variation ('ital').</summary>
+    public static Variation Italic(float value) => new("ital", value);
+
+    /// <summary>Create an optical size variation ('opsz').</summary>
+    public static Variation OpticalSize(float value) => new("opsz", value);
 }

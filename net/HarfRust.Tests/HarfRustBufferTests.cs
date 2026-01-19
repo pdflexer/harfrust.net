@@ -2,19 +2,37 @@ using Xunit;
 
 namespace HarfRust.Tests;
 
-public class HarfRustBufferTests
+public class FfiBufferTests : BufferTestsBase<FfiBackendFixture>
 {
+    public FfiBufferTests(FfiBackendFixture fixture) : base(fixture) { }
+}
+
+public class WasmBufferTests : BufferTestsBase<WasmBackendFixture>
+{
+    public WasmBufferTests(WasmBackendFixture fixture) : base(fixture) { }
+}
+
+public abstract class BufferTestsBase<TFixture> : IClassFixture<TFixture> where TFixture : BackendFixture
+{
+    protected readonly TFixture Fixture;
+    protected IHarfRustBackend Backend => Fixture.Backend;
+
+    protected BufferTestsBase(TFixture fixture)
+    {
+        Fixture = fixture;
+    }
+
     [Fact]
     public void NewBuffer_HasZeroLength()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         Assert.Equal(0, buffer.Length);
     }
 
     [Fact]
     public void AddString_IncreasesLength()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         buffer.AddString("Hello");
         Assert.Equal(5, buffer.Length);
     }
@@ -22,7 +40,7 @@ public class HarfRustBufferTests
     [Fact]
     public void AddString_MultipleStrings_AccumulatesLength()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         buffer.AddString("Hello");
         buffer.AddString(", ");
         buffer.AddString("world!");
@@ -32,7 +50,7 @@ public class HarfRustBufferTests
     [Fact]
     public void AddString_EmptyString_DoesNotChangeLength()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         buffer.AddString("");
         Assert.Equal(0, buffer.Length);
     }
@@ -40,7 +58,7 @@ public class HarfRustBufferTests
     [Fact]
     public void AddString_UnicodeCharacters_CountsCodepoints()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         // "Hello 世界" - 8 characters (6 ASCII + 2 CJK)
         buffer.AddString("Hello 世界");
         Assert.Equal(8, buffer.Length);
@@ -49,7 +67,7 @@ public class HarfRustBufferTests
     [Fact]
     public void Clear_ResetsLengthToZero()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         buffer.AddString("Hello, world!");
         Assert.Equal(13, buffer.Length);
         
@@ -60,7 +78,7 @@ public class HarfRustBufferTests
     [Fact]
     public void Clear_AllowsReuse()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         buffer.AddString("First");
         buffer.Clear();
         buffer.AddString("Second");
@@ -70,7 +88,7 @@ public class HarfRustBufferTests
     [Fact]
     public void Dispose_CanBeCalledMultipleTimes()
     {
-        var buffer = new HarfRustBuffer();
+        var buffer = new HarfRustBuffer(Backend);
         buffer.Dispose();
         buffer.Dispose(); // Should not throw
     }
@@ -78,7 +96,7 @@ public class HarfRustBufferTests
     [Fact]
     public void AfterDispose_MethodsThrowObjectDisposedException()
     {
-        var buffer = new HarfRustBuffer();
+        var buffer = new HarfRustBuffer(Backend);
         buffer.Dispose();
 
         Assert.Throws<ObjectDisposedException>(() => buffer.AddString("test"));
@@ -89,7 +107,7 @@ public class HarfRustBufferTests
     [Fact]
     public void AddString_NullString_ThrowsArgumentNullException()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         Assert.Throws<ArgumentNullException>(() => buffer.AddString(null!));
     }
 
@@ -98,7 +116,7 @@ public class HarfRustBufferTests
     {
         HarfRustBuffer? bufferRef;
         
-        using (var buffer = new HarfRustBuffer())
+        using (var buffer = new HarfRustBuffer(Backend))
         {
             buffer.AddString("test");
             bufferRef = buffer;
@@ -111,7 +129,7 @@ public class HarfRustBufferTests
     [Fact]
     public void Direction_RoundTrip()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         
         // Default is Invalid
         Assert.Equal(Direction.Invalid, buffer.Direction);
@@ -126,7 +144,7 @@ public class HarfRustBufferTests
     [Fact]
     public void Script_RoundTrip()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
 
         var latn = HarfRustBuffer.CreateScriptTag("Latn");
         buffer.Script = latn;
@@ -148,7 +166,7 @@ public class HarfRustBufferTests
     [Fact]
     public void SetLanguage_ValidTag_Succeeds()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         
         // Should not throw
         buffer.SetLanguage("en");
@@ -158,20 +176,14 @@ public class HarfRustBufferTests
     [Fact]
     public void SetLanguage_InvalidTag_ThrowsArgumentException()
     {
-        using var buffer = new HarfRustBuffer();
-        // Passing an empty string shouldn't crash but might fail validation inside harfrust or just be accepted as empty language
-        // Checking behavior with empty string
-        
-        // Harfbuzz/Harfrust might accept empty string?
-        // But invalid string might be harder to craft if it just parses.
-        // Let's try explicit null which is caught by .NET wrapper wrapper check
+        using var buffer = new HarfRustBuffer(Backend);
         Assert.Throws<ArgumentNullException>(() => buffer.SetLanguage(null!));
     }
 
     [Fact]
     public void GuessSegmentProperties_UpdatesDirection()
     {
-        using var buffer = new HarfRustBuffer();
+        using var buffer = new HarfRustBuffer(Backend);
         
         // Add Arabic text
         buffer.AddString("السلام عليكم");

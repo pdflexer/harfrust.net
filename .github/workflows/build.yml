@@ -7,7 +7,7 @@ on:
     branches: [ "main", "releases/*" ]
 
 jobs:
-  build-rust-windows:
+  build-native-windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
@@ -20,8 +20,49 @@ jobs:
         name: native-windows
         path: rust/target/release/harfrust_ffi.dll
 
+  build-native-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Rust (Release)
+      working-directory: ./rust
+      run: cargo build --release
+    - name: Upload Linux Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-linux
+        path: rust/target/release/libharfrust_ffi.so
+
+  build-native-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Rust (Release)
+      working-directory: ./rust
+      run: cargo build --release
+    - name: Upload macOS Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-macos
+        path: rust/target/release/libharfrust_ffi.dylib
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust WASM target
+      run: rustup target add wasm32-wasip1
+    - name: Build Rust (WASM)
+      working-directory: ./rust
+      run: cargo build --release --target wasm32-wasip1
+    - name: Upload WASM Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-wasm
+        path: rust/target/wasm32-wasip1/release/harfrust_ffi.wasm
+
   pack:
-    needs: [build-rust-windows]
+    needs: [build-native-windows, build-native-linux, build-native-macos, build-wasm]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -30,19 +71,35 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    # Build Linux & Generate Bindings locally to ensure fresh code
-    - name: Build Rust (Release) & Generate Bindings
-      working-directory: ./rust
-      run: cargo build --release
-
+    # Download all artifacts
     - name: Download Windows Binary
       uses: actions/download-artifact@v4
       with:
         name: native-windows
         path: rust/target/release
 
+    - name: Download Linux Binary
+      uses: actions/download-artifact@v4
+      with:
+        name: native-linux
+        path: rust/target/release
+
+    - name: Download macOS Binary
+      uses: actions/download-artifact@v4
+      with:
+        name: native-macos
+        path: rust/target/release
+
+    - name: Download WASM Binary
+      uses: actions/download-artifact@v4
+      with:
+        name: native-wasm
+        path: rust/target/wasm32-wasip1/release
+
     - name: List files for verification
-      run: ls -R rust/target/release
+      run: |
+        ls -R rust/target/release
+        ls -R rust/target/wasm32-wasip1/release
 
     - name: Run .NET Tests
       working-directory: ./net
@@ -52,7 +109,7 @@ jobs:
       id: check_release
       shell: bash
       run: |
-        VERSION="0.0.1"
+        VERSION="0.0.1-preview"
         REF_NAME="${{ github.ref_name }}"
         
         # Check for refs/heads/releases/X.Y.Z
@@ -64,23 +121,34 @@ jobs:
         echo "Extracted Version: $VERSION"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Pack NuGet
+    # Pack HarfRust.Native (contains DLL/SO/DYLIB)
+    - name: Pack HarfRust.Native
+      working-directory: ./net/HarfRust.Native
+      run: dotnet pack -c Release -p:PackageVersion=${{ steps.check_release.outputs.version }} -p:Version=${{ steps.check_release.outputs.version }}
+
+    # Pack HarfRust.Wasmtime (contains WASM embedded)
+    - name: Pack HarfRust.Wasmtime
+      working-directory: ./net/HarfRust.Wasmtime
+      run: dotnet pack -c Release -p:PackageVersion=${{ steps.check_release.outputs.version }} -p:Version=${{ steps.check_release.outputs.version }}
+
+    # Pack Main Library
+    - name: Pack HarfRust
       working-directory: ./net/HarfRust
       run: dotnet pack -c Release -p:PackageVersion=${{ steps.check_release.outputs.version }} -p:Version=${{ steps.check_release.outputs.version }}
 
-    - name: Upload Linux Binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: native-linux
-        path: rust/target/release/libharfrust_ffi.so
-
-    - name: Upload NuGet Package
+    - name: Upload NuGet Packages
       if: steps.check_release.outputs.is_valid_release == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-package
-        path: net/HarfRust/bin/Release/*.nupkg
+        name: nuget-packages
+        path: |
+          net/HarfRust.Native/bin/Release/*.nupkg
+          net/HarfRust.Wasmtime/bin/Release/*.nupkg
+          net/HarfRust/bin/Release/*.nupkg
 
     - name: Publish to NuGet
       if: steps.check_release.outputs.is_valid_release == 'true'
-      run: dotnet nuget push net/HarfRust/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      run: |
+        dotnet nuget push net/HarfRust.Native/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        dotnet nuget push net/HarfRust.Wasmtime/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        dotnet nuget push net/HarfRust/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

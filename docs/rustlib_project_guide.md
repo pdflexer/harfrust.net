@@ -4,7 +4,7 @@ This document outlines the recommended structure and implementation checklist fo
 
 ## 1. Project Structure
 
-A clean repository structure separates the Native (Rust) and Managed (.NET) concerns while enabling easy cross-compilation and packaging.
+A clean repository structure separates the Native (Rust) and Managed (.NET) concerns while enabling multiple backends (Native FFI & Wasm) and easy cross-compilation.
 
 ```text
 root/
@@ -16,12 +16,15 @@ root/
 │   ├── Cargo.toml          # crate-type = ["cdylib"]
 │   └── build.rs            # csbindgen configuration
 ├── net/                    # The .NET Solution
-│   ├── MyLibrary/              # Main .NET Library (Public API & Bindings)
-│   │   ├── MyLibrary.csproj    # Packages native assets
-│   │   ├── Wrapper.cs          # Safe Handle wrappers
-│   │   └── Bindings/           # Generated low-level bindings
-│   │       └── NativeMethods.g.cs
-│   └── MyLibrary.Tests/        # Unit Tests
+│   ├── MyLibrary/              # Main Library & Default Backend
+│   │   ├── MyLibrary.csproj    # Main Package
+│   │   ├── MyLibraryFont.cs    # High-level API (Example)
+│   │   └── Bindings/           # Generated low-level bindings (FFI)
+│   ├── MyLibrary.Wasmtime/     # Alternative Wasm Backend
+│   │   └── WasmContext.cs      # Wasmtime implementation
+│   ├── MyLibrary.Native/       # Native Assets Package
+│   │   └── MyLibrary.Native.csproj # Packs .dll/.so/.dylib
+│   └── MyLibrary.Tests/        # Shared Unit Tests
 └── docs/                   # Documentation
 ```
 
@@ -51,16 +54,56 @@ root/
     - Use Rust's standard string handling (`CStr`, `String`).
     - For high performance, consider native UTF-16 APIs on the Rust side to avoid conversion overhead in .NET.
 - [ ] **Platform Handling**: Use `copy` instructions in `.csproj` to ensure native binaries (`.dll`, `.so`, `.dylib`) are available during development.
+- [ ] **Wasmtime Backend (Optional)**:
+    - **WASM Embedding**: Embed the `.wasm` file as an `EmbeddedResource` in the backend project.
+    - **Memory Management**: Implement explicit `Malloc`/`Free` exports in Rust and use them to marshal data into the WASM linear memory.
+    - **Context Management**: Create a `WasmContext` class to manage the `Wasmtime.Store`, `Instance`, and `Memory` exports.
+    - **Function Mapping**: Use `Instance.GetFunction<T...>` to map exported Rust functions to C# delegates.
+    - **Serialization**: Be aware that complex structs cannot be passed directly to WASM; pass pointers (int offsets) to data you've written to WASM memory.
 
 ### Phase 4: Packaging (NuGet)
 
 - [ ] **Folder Structure**: Map native assets to `runtimes/{rid}/native/`.
-    - `win-x64` -> `runtimes/win-x64/native/mylib.dll`
-    - `linux-x64` -> `runtimes/linux-x64/native/libmylib.so`
+    - `win-x64` -> `runtimes/win-x64/native/mylib_ffi.dll`
+    - `linux-x64` -> `runtimes/linux-x64/native/libmylib_ffi.so`
     - `osx-x64`/`osx-arm64` -> `runtimes/osx...`
 - [ ] **Conditionals**: Use `Condition="Exists(...)"` in `.csproj` so the package builds even if some native binaries are missing locally (allowing cross-platform CI to fill them in).
 
-## 3. CI/CD Pipeline
+## 3. Testing Strategy
+ 
+ To ensure consistency across multiple backends (Native FFI and Wasm), use a shared test suite based on xUnit Class Fixtures.
+ 
+ ### Fixture Pattern
+ 
+ 1. **Core Abstractions**:
+    - `BackendFixture`: Abstract base class managing shared resources and defining the abstract `Backend` property.
+    - `ILibraryBackend`: The common interface implemented by both `NativeBackend` and `WasmtimeBackend`.
+
+ 2. **Concrete Fixtures**:
+    - `NativeBackendFixture` : `BackendFixture`: Instantiates the native P/Invoke backend (`NativeBackend`).
+    - `WasmBackendFixture` : `BackendFixture`: Instantiates the Wasmtime backend.
+ 
+ 3. **Shared Test Classes**:
+    - Write tests in an abstract base class `ShapingTestsBase<TFixture>`.
+    - Use `IClassFixture<TFixture>` to inject the specific backend.
+    - Tests interact only with the `ILibraryBackend` interface.
+ 
+ 4. **Test Implementation**:
+    ```csharp
+    public abstract class ShapingTestsBase<TFixture> : IClassFixture<TFixture> 
+        where TFixture : BackendFixture
+    {
+        protected readonly TFixture Fixture;
+        protected ILibraryBackend Backend => Fixture.Backend;
+        
+        // ... shared tests ...
+    }
+ 
+    public class NativeTests : TestsBase<NativeBackendFixture> { ... }
+    public class WasmTests : TestsBase<WasmBackendFixture> { ... }
+    ```
+ 
+ ## 4. CI/CD Pipeline
 
 - [ ] **Matrix Build**: Use separate runners for Windows, Linux, and macOS to build native binaries.
 - [ ] **Artifact Staging**: Upload native binaries as build artifacts.

@@ -1,7 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Text;
-using HarfRust.Bindings;
-
 namespace HarfRust;
 
 /// <summary>
@@ -11,31 +7,38 @@ namespace HarfRust;
 /// This class wraps the native harfrust UnicodeBuffer and manages its lifecycle.
 /// Always dispose of this object when done to free native resources.
 /// </remarks>
-public sealed unsafe class HarfRustBuffer : IDisposable
+public sealed class HarfRustBuffer : IDisposable
 {
-    private Bindings.HarfRustBuffer* _handle;
+    private readonly IBackendBuffer _backend;
     private bool _disposed;
     private bool _consumed;
 
     /// <summary>
-    /// Creates a new empty text buffer.
+    /// Creates a new empty text buffer using the current default backend.
     /// </summary>
-    public HarfRustBuffer()
+    public HarfRustBuffer() : this(HarfRustBackend.Current)
     {
-        _handle = NativeMethods.harfrust_buffer_new();
-        if (_handle == null)
-        {
-            throw new InvalidOperationException("Failed to create HarfRustBuffer");
-        }
     }
 
     /// <summary>
-    /// Internal constructor for creating from a native handle.
+    /// Creates a new empty text buffer using the specified backend.
     /// </summary>
-    internal HarfRustBuffer(Bindings.HarfRustBuffer* handle)
+    /// <param name="backend">The backend to use for buffer operations.</param>
+    public HarfRustBuffer(IHarfRustBackend backend)
     {
-        _handle = handle;
+        ArgumentNullException.ThrowIfNull(backend);
+        _backend = backend.CreateBuffer();
     }
+
+    /// <summary>
+    /// Internal constructor for creating from a backend buffer.
+    /// </summary>
+    internal HarfRustBuffer(IBackendBuffer backend)
+    {
+        _backend = backend;
+    }
+
+    internal IBackendBuffer BackendBuffer => _backend;
 
     /// <summary>
     /// Helper to create a 4-byte script tag from a string (e.g., "Latn").
@@ -46,7 +49,7 @@ public sealed unsafe class HarfRustBuffer : IDisposable
         {
             throw new ArgumentException("Tag must be exactly 4 characters.", nameof(tag));
         }
-            
+
         return ((uint)tag[0] << 24) | ((uint)tag[1] << 16) | ((uint)tag[2] << 8) | (uint)tag[3];
     }
 
@@ -58,7 +61,7 @@ public sealed unsafe class HarfRustBuffer : IDisposable
         get
         {
             ThrowIfDisposedOrConsumed();
-            return NativeMethods.harfrust_buffer_len(_handle);
+            return _backend.Length;
         }
     }
 
@@ -72,20 +75,7 @@ public sealed unsafe class HarfRustBuffer : IDisposable
     {
         ArgumentNullException.ThrowIfNull(text);
         ThrowIfDisposedOrConsumed();
-
-        if (string.IsNullOrEmpty(text))
-        {
-            return;
-        }
-
-        fixed (char* ptr = text)
-        {
-            var result = NativeMethods.harfrust_buffer_add_utf16(_handle, (ushort*)ptr, text.Length);
-            if (result != 0)
-            {
-                throw new InvalidOperationException($"Failed to add string to buffer (error code: {result})");
-            }
-        }
+        _backend.AddString(text);
     }
 
     /// <summary>
@@ -95,20 +85,72 @@ public sealed unsafe class HarfRustBuffer : IDisposable
     public void Clear()
     {
         ThrowIfDisposedOrConsumed();
-        NativeMethods.harfrust_buffer_clear(_handle);
+        _backend.Clear();
+    }
+
+    /// <summary>
+    /// Gets or sets the text direction of the buffer.
+    /// </summary>
+    public Direction Direction
+    {
+        get
+        {
+            ThrowIfDisposedOrConsumed();
+            return _backend.Direction;
+        }
+        set
+        {
+            ThrowIfDisposedOrConsumed();
+            _backend.Direction = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the script of the buffer as an ISO 15924 tag.
+    /// </summary>
+    public uint Script
+    {
+        get
+        {
+            ThrowIfDisposedOrConsumed();
+            return _backend.Script;
+        }
+        set
+        {
+            ThrowIfDisposedOrConsumed();
+            _backend.Script = value;
+        }
+    }
+
+    /// <summary>
+    /// Sets the language of the buffer from a BCP 47 language tag string.
+    /// </summary>
+    /// <param name="language">The language tag (e.g., "en", "zh-Hans").</param>
+    public void SetLanguage(string language)
+    {
+        ArgumentNullException.ThrowIfNull(language);
+        ThrowIfDisposedOrConsumed();
+        _backend.SetLanguage(language);
+    }
+
+    /// <summary>
+    /// Guesses and sets the segment properties (direction, script, language) based on the buffer contents.
+    /// </summary>
+    public void GuessSegmentProperties()
+    {
+        ThrowIfDisposedOrConsumed();
+        _backend.GuessSegmentProperties();
     }
 
     /// <summary>
     /// Consumes the buffer handle for use in shaping.
     /// After calling this, the buffer is no longer usable.
     /// </summary>
-    internal Bindings.HarfRustBuffer* ConsumeHandle()
+    internal nint ConsumeHandle()
     {
         ThrowIfDisposedOrConsumed();
         _consumed = true;
-        var handle = _handle;
-        _handle = null;
-        return handle;
+        return _backend.ConsumeHandle();
     }
 
     private void ThrowIfDisposedOrConsumed()
@@ -124,80 +166,13 @@ public sealed unsafe class HarfRustBuffer : IDisposable
     }
 
     /// <summary>
-    /// Gets or sets the text direction of the buffer.
-    /// </summary>
-    public Direction Direction
-    {
-        get
-        {
-            ThrowIfDisposedOrConsumed();
-            return (Direction)NativeMethods.harfrust_buffer_get_direction(_handle);
-        }
-        set
-        {
-            ThrowIfDisposedOrConsumed();
-            NativeMethods.harfrust_buffer_set_direction(_handle, (Bindings.HarfRustDirection)value);
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the script of the buffer as an ISO 15924 tag.
-    /// </summary>
-    public uint Script
-    {
-        get
-        {
-            ThrowIfDisposedOrConsumed();
-            return NativeMethods.harfrust_buffer_get_script(_handle);
-        }
-        set
-        {
-            ThrowIfDisposedOrConsumed();
-            NativeMethods.harfrust_buffer_set_script(_handle, value);
-        }
-    }
-
-    /// <summary>
-    /// Sets the language of the buffer from a BCP 47 language tag string.
-    /// </summary>
-    /// <param name="language">The language tag (e.g., "en", "zh-Hans").</param>
-    public void SetLanguage(string language)
-    {
-        ArgumentNullException.ThrowIfNull(language);
-        ThrowIfDisposedOrConsumed();
-
-        var bytes = Encoding.UTF8.GetBytes(language + '\0');
-        fixed (byte* ptr = bytes)
-        {
-            var result = NativeMethods.harfrust_buffer_set_language(_handle, ptr);
-            if (result != 0)
-            {
-                throw new ArgumentException($"Invalid language tag: {language} (error code: {result})", nameof(language));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Guesses and sets the segment properties (direction, script, language) based on the buffer contents.
-    /// </summary>
-    public void GuessSegmentProperties()
-    {
-        ThrowIfDisposedOrConsumed();
-        NativeMethods.harfrust_buffer_guess_segment_properties(_handle);
-    }
-
-    /// <summary>
     /// Releases all native resources associated with this buffer.
     /// </summary>
     public void Dispose()
     {
         if (!_disposed && !_consumed)
         {
-            if (_handle != null)
-            {
-                NativeMethods.harfrust_buffer_free(_handle);
-                _handle = null;
-            }
+            _backend.Dispose();
         }
         _disposed = true;
     }

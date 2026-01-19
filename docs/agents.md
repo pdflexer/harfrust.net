@@ -6,6 +6,10 @@ HarfRust.NET is a high-performance .NET wrapper for the `harfrust` text shaping 
 
 ```bash
 dotnet add package HarfRust
+# Optional: Add native runtimes for default FFI backend (Required if using FFI)
+dotnet add package HarfRust.Native
+# Optional: Add Wasmtime backend
+dotnet add package HarfRust.Wasmtime
 ```
 
 ## Core Components
@@ -291,6 +295,54 @@ Static utilities for working with grapheme clusters (Text Elements).
 var text = "A👨‍👩‍👧B";
 var count = TextAnalyzer.CountTextElements(text);  // 3 visual characters
 var indices = TextAnalyzer.GetTextElementIndices(text);  // [0, 1, 9] char positions
+```
+
+---
+
+## Backends
+
+HarfRust.NET supports multiple backends for text shaping.
+
+### 1. FFI Backend (Default)
+Uses native `harfrust` binaries via P/Invoke. 
+- **Requires**: `HarfRust.Native` package referenced in your project.
+- **Performance**: Fastest.
+- **Platform**: Windows, Linux, macOS (x64/arm64).
+
+### 2. Wasmtime Backend (WASM)
+Runs the `harfrust` engine as a WebAssembly module using `Wasmtime`.
+- **Requires**: `HarfRust.Wasmtime` package.
+- **Performance**: Slower than FFI but sandboxed and platform-independent (wherever Wasmtime runs).
+- **Usability**: Ideal for containerized environments or where native dynlibs are problematic.
+
+### Switching Backends
+
+You can switch the global backend for the current async context using `HarfRustBackend.Current`.
+
+```csharp
+using HarfRust.Wasmtime;
+
+// Use FFI by default (if Runtime.Ffi is installed)
+using var fontFfi = HarfRustFont.FromFile("font.ttf");
+
+// Switch to WASM backend
+using (new WasmtimeBackend()) // WasmtimeBackend automatically sets itself as Current
+{
+    // All fonts/buffers created here use the WASM backend
+    using var fontWasm = HarfRustFont.FromFile("font.ttf");
+    using var bufferWasm = new HarfRustBuffer();
+    
+    // Shaping happens in WASM
+    var result = fontWasm.Shape(bufferWasm);
+}
+// Automatically reverts to FFI backend after disposal
+```
+
+Alternatively, pass the backend explicitly:
+
+```csharp
+using var wasmBackend = new WasmtimeBackend();
+using var font = HarfRustFont.FromFile("font.ttf", wasmBackend);
 ```
 
 ---

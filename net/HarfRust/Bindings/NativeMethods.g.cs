@@ -166,6 +166,19 @@ namespace HarfRust.Bindings
         [DllImport(__DllName, EntryPoint = "harfrust_glyph_buffer_free", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void harfrust_glyph_buffer_free(HarfRustGlyphBuffer* buffer);
 
+        /// <summary>
+        ///  Allocates memory in the WASM linear memory.
+        ///  Used by the host to allocate space for passing data to WASM.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "harfrust_alloc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern int harfrust_alloc(int size);
+
+        /// <summary>
+        ///  Frees memory allocated by harfrust_alloc.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "harfrust_dealloc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void harfrust_dealloc(int ptr);
+
 
     }
 

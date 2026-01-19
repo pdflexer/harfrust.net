@@ -1,5 +1,3 @@
-using HarfRust.Bindings;
-
 namespace HarfRust;
 
 /// <summary>
@@ -9,34 +7,22 @@ namespace HarfRust;
 /// The font owns a copy of the font data and keeps it alive for the lifetime of the font.
 /// Use <see cref="Shape"/> to perform text shaping with this font.
 /// </remarks>
-public sealed unsafe class HarfRustFont : IDisposable
+public sealed class HarfRustFont : IDisposable
 {
-    private Bindings.HarfRustFont* _handle;
+    private readonly IBackendFont _backend;
     private bool _disposed;
 
     /// <summary>
     /// Creates a font from raw font data (TTF/OTF bytes).
     /// </summary>
     /// <param name="data">The font file data.</param>
+    /// <param name="backend">Optional backend to use. Defaults to FFI backend.</param>
     /// <exception cref="ArgumentNullException">Thrown if data is null.</exception>
     /// <exception cref="ArgumentException">Thrown if data is empty or invalid.</exception>
-    public HarfRustFont(byte[] data)
+    public HarfRustFont(byte[] data, IHarfRustBackend? backend = null)
     {
-        ArgumentNullException.ThrowIfNull(data);
-        if (data.Length == 0)
-        {
-            throw new ArgumentException("Font data cannot be empty.", nameof(data));
-        }
-
-        fixed (byte* dataPtr = data)
-        {
-            _handle = NativeMethods.harfrust_font_from_data(dataPtr, data.Length);
-        }
-
-        if (_handle == null)
-        {
-            throw new ArgumentException("Invalid font data.", nameof(data));
-        }
+        backend ??= HarfRustBackend.Current;
+        _backend = backend.CreateFont(data);
     }
 
     /// <summary>
@@ -44,38 +30,27 @@ public sealed unsafe class HarfRustFont : IDisposable
     /// </summary>
     /// <param name="data">The font file data.</param>
     /// <param name="index">The font index within the collection (0 for single fonts).</param>
+    /// <param name="backend">Optional backend to use. Defaults to FFI backend.</param>
     /// <exception cref="ArgumentNullException">Thrown if data is null.</exception>
     /// <exception cref="ArgumentException">Thrown if data is empty, invalid, or index is out of range.</exception>
-    public HarfRustFont(byte[] data, uint index)
+    public HarfRustFont(byte[] data, uint index, IHarfRustBackend? backend = null)
     {
-        ArgumentNullException.ThrowIfNull(data);
-        if (data.Length == 0)
-        {
-            throw new ArgumentException("Font data cannot be empty.", nameof(data));
-        }
-
-        fixed (byte* dataPtr = data)
-        {
-            _handle = NativeMethods.harfrust_font_from_data_index(dataPtr, data.Length, index);
-        }
-
-        if (_handle == null)
-        {
-            throw new ArgumentException("Invalid font data or index out of range.", nameof(data));
-        }
+        backend ??= HarfRustBackend.Current;
+        _backend = backend.CreateFont(data, index);
     }
 
     /// <summary>
     /// Creates a font from a file path.
     /// </summary>
     /// <param name="path">The path to the font file.</param>
+    /// <param name="backend">Optional backend to use. Defaults to current backend.</param>
     /// <returns>A new font instance.</returns>
     /// <exception cref="FileNotFoundException">Thrown if the file does not exist.</exception>
     /// <exception cref="ArgumentException">Thrown if the font data is invalid.</exception>
-    public static HarfRustFont FromFile(string path)
+    public static HarfRustFont FromFile(string path, IHarfRustBackend? backend = null)
     {
         var data = File.ReadAllBytes(path);
-        return new HarfRustFont(data);
+        return new HarfRustFont(data, backend);
     }
 
     /// <summary>
@@ -83,23 +58,25 @@ public sealed unsafe class HarfRustFont : IDisposable
     /// </summary>
     /// <param name="path">The path to the font file.</param>
     /// <param name="index">The font index within the collection.</param>
+    /// <param name="backend">Optional backend to use. Defaults to current backend.</param>
     /// <returns>A new font instance.</returns>
-    public static HarfRustFont FromFile(string path, uint index)
+    public static HarfRustFont FromFile(string path, uint index, IHarfRustBackend? backend = null)
     {
         var data = File.ReadAllBytes(path);
-        return new HarfRustFont(data, index);
+        return new HarfRustFont(data, index, backend);
     }
 
     /// <summary>
     /// Creates a font from a stream.
     /// </summary>
     /// <param name="stream">The stream containing font data.</param>
+    /// <param name="backend">Optional backend to use. Defaults to current backend.</param>
     /// <returns>A new font instance.</returns>
-    public static HarfRustFont FromStream(Stream stream)
+    public static HarfRustFont FromStream(Stream stream, IHarfRustBackend? backend = null)
     {
         using var memoryStream = new MemoryStream();
         stream.CopyTo(memoryStream);
-        return new HarfRustFont(memoryStream.ToArray());
+        return new HarfRustFont(memoryStream.ToArray(), backend);
     }
 
     /// <summary>
@@ -110,7 +87,7 @@ public sealed unsafe class HarfRustFont : IDisposable
         get
         {
             ThrowIfDisposed();
-            return NativeMethods.harfrust_font_units_per_em(_handle);
+            return _backend.UnitsPerEm;
         }
     }
 
@@ -130,13 +107,8 @@ public sealed unsafe class HarfRustFont : IDisposable
         ArgumentNullException.ThrowIfNull(buffer);
         ThrowIfDisposed();
 
-        var glyphBuffer = NativeMethods.harfrust_shape(_handle, buffer.ConsumeHandle());
-        if (glyphBuffer == null)
-        {
-            throw new InvalidOperationException("Shaping failed.");
-        }
-
-        return new HarfRustGlyphBuffer(glyphBuffer);
+        var result = _backend.Shape(buffer.BackendBuffer);
+        return new HarfRustGlyphBuffer(result);
     }
 
     /// <summary>
@@ -156,59 +128,8 @@ public sealed unsafe class HarfRustFont : IDisposable
             return Shape(buffer);
         }
 
-        // Map features
-        Bindings.HarfRustFeature[]? nativeFeatures = null;
-        if (features != null && features.Length > 0)
-        {
-            nativeFeatures = new Bindings.HarfRustFeature[features.Length];
-            for (int i = 0; i < features.Length; i++)
-            {
-                nativeFeatures[i] = new Bindings.HarfRustFeature
-                {
-                    tag = features[i].Tag,
-                    value = features[i].Value,
-                    start = features[i].Start,
-                    end = features[i].End
-                };
-            }
-        }
-
-        // Map variations
-        Bindings.HarfRustVariation[]? nativeVariations = null;
-        if (variations != null && variations.Length > 0)
-        {
-            nativeVariations = new Bindings.HarfRustVariation[variations.Length];
-            for (int i = 0; i < variations.Length; i++)
-            {
-                nativeVariations[i] = new Bindings.HarfRustVariation
-                {
-                    tag = variations[i].Tag,
-                    value = variations[i].Value
-                };
-            }
-        }
-
-        Bindings.HarfRustGlyphBuffer* glyphBuffer;
-        
-        fixed (Bindings.HarfRustFeature* featPtr = nativeFeatures)
-        fixed (Bindings.HarfRustVariation* varPtr = nativeVariations)
-        {
-             glyphBuffer = NativeMethods.harfrust_shape_full(
-                _handle, 
-                buffer.ConsumeHandle(), 
-                featPtr,
-                nativeFeatures == null ? 0 : (uint)nativeFeatures.Length,
-                varPtr,
-                nativeVariations == null ? 0 : (uint)nativeVariations.Length
-            );
-        }
-
-        if (glyphBuffer == null)
-        {
-            throw new InvalidOperationException("Shaping failed.");
-        }
-
-        return new HarfRustGlyphBuffer(glyphBuffer);
+        var result = _backend.Shape(buffer.BackendBuffer, features, variations);
+        return new HarfRustGlyphBuffer(result);
     }
 
     private void ThrowIfDisposed()
@@ -226,11 +147,7 @@ public sealed unsafe class HarfRustFont : IDisposable
     {
         if (!_disposed)
         {
-            if (_handle != null)
-            {
-                NativeMethods.harfrust_font_free(_handle);
-                _handle = null;
-            }
+            _backend.Dispose();
             _disposed = true;
         }
     }

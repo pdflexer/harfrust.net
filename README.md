@@ -17,6 +17,35 @@ Install via NuGet:
 
 ```bash
 dotnet add package HarfRust
+# Native Runtime (Required for default FFI backend)
+dotnet add package HarfRust.Runtime.Ffi
+# OR Wasmtime Backend, call `using new WasmtimeBackend();` to enable
+dotnet add package HarfRust.Backend.Wasmtime
+```
+
+## Backends
+
+HarfRust.NET separates the core API from the implementation backend.
+
+1.  **FFI Backend** (`HarfRust.Runtime.Ffi`): Default. Uses native binaries. High performance.
+2.  **WASM Backend** (`HarfRust.Backend.Wasmtime`): Uses WebAssembly version of HarfRust running in Wasmtime. Sandboxed and portable.
+
+### Using WASM Backend
+
+You can enable the WASM backend for a specific scope:
+
+```csharp
+using HarfRust.Backend.Wasmtime;
+
+// ....
+
+using (new WasmtimeBackend()) 
+{
+    // Inside this block, HarfRust uses the WASM backend automatically
+    using var font = HarfRustFont.FromFile("font.ttf");
+    var glyphs = font.Shape(buffer);
+}
+// Reverts to default backend here
 ```
 
 ## Quick Start

@@ -1,0 +1,769 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  HarfRust.Native -> C:\source\github\harfrust.net\net\HarfRust.Native\bin\Debug\net10.0\HarfRust.Native.dll
+  HarfRust -> C:\source\github\harfrust.net\net\HarfRust\bin\Debug\net10.0\HarfRust.dll
+  HarfRust.Wasmtime -> C:\source\github\harfrust.net\net\HarfRust.Wasmtime\bin\Debug\net10.0\HarfRust.Wasmtime.dll
+  HarfRust.Tests -> C:\source\github\harfrust.net\net\HarfRust.Tests\bin\Debug\net10.0\HarfRust.Tests.dll
+Test run for C:\source\github\harfrust.net\net\HarfRust.Tests\bin\Debug\net10.0\HarfRust.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShaperTests.ShapeWithFallback_MultibyteCharacters_OffsetsAreTraceable [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.AddString_EmptyString_DoesNotChangeLength [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_UnicodeText_ReturnsGlyphs [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_GlyphInfos_HaveValidData [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShaperTests.ShapeWithFallback_NoFallbackNeeded [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.Script_RoundTrip [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShaperTests.ShapeWithFallback_UsesFallbackFontForMissingGlyphs [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Font_InvalidData_ThrowsArgumentException [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.UsingStatement_DisposesCorrectly [FAIL]
+  Failed HarfRust.Tests.WasmShaperTests.ShapeWithFallback_MultibyteCharacters_OffsetsAreTraceable [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.AddString_EmptyString_DoesNotChangeLength [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_UnicodeText_ReturnsGlyphs [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_GlyphInfos_HaveValidData [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShaperTests.ShapeWithFallback_NoFallbackNeeded [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.Script_RoundTrip [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShaperTests.ShapeWithFallback_UsesFallbackFontForMissingGlyphs [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Font_InvalidData_ThrowsArgumentException [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.UsingStatement_DisposesCorrectly [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Font_NullData_ThrowsArgumentNullException [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.CreateScriptTag_ValidatesInput [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.GlyphBuffer_IntoBuffer_CreatesReusableBuffer [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.AddString_UnicodeCharacters_CountsCodepoints [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_WithVariations_DoesNotCrash [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.AddString_IncreasesLength [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_WithExplicitFeatures_Works [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.SetLanguage_InvalidTag_ThrowsArgumentException [FAIL]
+  Failed HarfRust.Tests.WasmShapingTests.Font_NullData_ThrowsArgumentNullException [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.CreateScriptTag_ValidatesInput [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.GlyphBuffer_IntoBuffer_CreatesReusableBuffer [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.AddString_UnicodeCharacters_CountsCodepoints [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_WithVariations_DoesNotCrash [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.AddString_IncreasesLength [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_WithExplicitFeatures_Works [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.SetLanguage_InvalidTag_ThrowsArgumentException [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_MultipleShapes_WorkCorrectly [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.Direction_RoundTrip [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Font_FromData_LoadsSuccessfully [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.NewBuffer_HasZeroLength [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Buffer_ConsumedByShape_CannotBeReused [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.Dispose_CanBeCalledMultipleTimes [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Buffer_SetScript_Works [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.AddString_MultipleStrings_AccumulatesLength [FAIL]
+  Failed HarfRust.Tests.WasmShapingTests.Shape_MultipleShapes_WorkCorrectly [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.Direction_RoundTrip [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Font_FromData_LoadsSuccessfully [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.NewBuffer_HasZeroLength [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Buffer_ConsumedByShape_CannotBeReused [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.Dispose_CanBeCalledMultipleTimes [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Buffer_SetScript_Works [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.AddString_MultipleStrings_AccumulatesLength [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Buffer_Clear_ResetsLength [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.AfterDispose_MethodsThrowObjectDisposedException [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Font_UnitsPerEm_ReturnsValidValue_Detailed [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.Clear_AllowsReuse [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_GlyphPositions_HaveValidAdvances [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.SetLanguage_ValidTag_Succeeds [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmShapingTests.Shape_WithFeatures_Works [FAIL]
+[xUnit.net 00:00:00.36]     HarfRust.Tests.WasmBufferTests.GuessSegmentProperties_UpdatesDirection [FAIL]
+  Failed HarfRust.Tests.WasmShapingTests.Buffer_Clear_ResetsLength [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.AfterDispose_MethodsThrowObjectDisposedException [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Font_UnitsPerEm_ReturnsValidValue_Detailed [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.Clear_AllowsReuse [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_GlyphPositions_HaveValidAdvances [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.SetLanguage_ValidTag_Succeeds [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_WithFeatures_Works [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.GuessSegmentProperties_UpdatesDirection [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.Shape_SimpleText_ReturnsGlyphs [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmBufferTests.AddString_NullString_ThrowsArgumentNullException [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.Font_Dispose_CanBeCalledMultipleTimes [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmBufferTests.Clear_ResetsLengthToZero [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.GlyphBuffer_Dispose_CanBeCalledMultipleTimes [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.Font_EmptyData_ThrowsArgumentException [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.Shape_EmptyBuffer_ReturnsEmptyResult [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.Buffer_SetDirection_Works [FAIL]
+[xUnit.net 00:00:00.37]     HarfRust.Tests.WasmShapingTests.Buffer_AddString_IncreasesLength [FAIL]
+  Failed HarfRust.Tests.WasmShapingTests.Shape_SimpleText_ReturnsGlyphs [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.AddString_NullString_ThrowsArgumentNullException [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Font_Dispose_CanBeCalledMultipleTimes [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmBufferTests.Clear_ResetsLengthToZero [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.GlyphBuffer_Dispose_CanBeCalledMultipleTimes [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Font_EmptyData_ThrowsArgumentException [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Shape_EmptyBuffer_ReturnsEmptyResult [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Buffer_SetDirection_Works [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+  Failed HarfRust.Tests.WasmShapingTests.Buffer_AddString_IncreasesLength [1 ms]
+  Error Message:
+   System.AggregateException : One or more errors occurred. (unknown import: `wasi_snapshot_preview1::fd_write` has not been defined) (The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture)
+---- Wasmtime.WasmtimeException : unknown import: `wasi_snapshot_preview1::fd_write` has not been defined
+---- The following constructor parameters did not have matching fixture data: WasmBackendFixture fixture
+  Stack Trace:
+  
+----- Inner Stack Trace #1 (Wasmtime.WasmtimeException) -----
+   at Wasmtime.Linker.Instantiate(Store store, Module module)
+   at HarfRust.Wasmtime.WasmtimeBackend.CreateInstance(Store store) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 106
+   at HarfRust.Wasmtime.WasmContext..ctor(WasmtimeBackend backend) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmContext.cs:line 43
+   at HarfRust.Wasmtime.WasmtimeBackend..ctor(String wasmPath) in C:\source\github\harfrust.net\net\HarfRust.Wasmtime\WasmtimeBackend.cs:line 61
+   at HarfRust.Tests.WasmBackendFixture..ctor() in C:\source\github\harfrust.net\net\HarfRust.Tests\Fixtures\WasmBackendFixture.cs:line 35
+   at InvokeStub_WasmBackendFixture..ctor(Object, Object, IntPtr*)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+----- Inner Stack Trace #2 (Xunit.Sdk.TestClassException) -----
+
+
+Failed!  - Failed:    42, Passed:    51, Skipped:     0, Total:    93, Duration: 151 ms - HarfRust.Tests.dll (net10.0)

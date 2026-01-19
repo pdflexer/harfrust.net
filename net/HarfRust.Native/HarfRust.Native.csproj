@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <Description>Native runtime binaries for HarfRust FFI backend</Description>
+    <!-- This project has no code, only native binaries -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <!-- Windows x64 -->
+  <ItemGroup>
+    <None Include="..\..\rust\target\release\harfrust_ffi.dll" Condition="Exists('..\..\rust\target\release\harfrust_ffi.dll')">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/win-x64/native/harfrust_ffi.dll</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\win-x64\native\harfrust_ffi.dll</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Linux x64 -->
+  <ItemGroup>
+    <None Include="..\..\rust\target\release\libharfrust_ffi.so" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.so')">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/linux-x64/native/libharfrust_ffi.so</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\linux-x64\native\libharfrust_ffi.so</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- macOS x64 -->
+  <ItemGroup>
+    <None Include="..\..\rust\target\release\libharfrust_ffi.dylib" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.dylib')">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/osx-x64/native/libharfrust_ffi.dylib</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\osx-x64\native\libharfrust_ffi.dylib</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

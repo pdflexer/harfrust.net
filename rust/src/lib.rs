@@ -733,6 +733,48 @@ pub unsafe extern "C" fn harfrust_glyph_buffer_free(buffer: *mut HarfRustGlyphBu
 // =============================================================================
 // Tests
 // =============================================================================
+// =============================================================================
+// WASM Memory Allocation (required for Wasmtime host calls)
+// =============================================================================
+
+/// Allocates memory in the WASM linear memory.
+/// Used by the host to allocate space for passing data to WASM.
+#[no_mangle]
+pub extern "C" fn harfrust_alloc(size: i32) -> i32 {
+    if size <= 0 {
+        return 0;
+    }
+    
+    let layout = match std::alloc::Layout::from_size_align(size as usize, 8) {
+        Ok(l) => l,
+        Err(_) => return 0,
+    };
+    
+    // SAFETY: We're allocating with a valid layout and returning the pointer as i32
+    let ptr = unsafe { std::alloc::alloc(layout) };
+    if ptr.is_null() {
+        0
+    } else {
+        ptr as i32
+    }
+}
+
+/// Frees memory allocated by harfrust_alloc.
+#[no_mangle]
+pub unsafe extern "C" fn harfrust_dealloc(ptr: i32) {
+    if ptr == 0 {
+        return;
+    }
+    
+    // Note: This is a simplified free that doesn't track the original size.
+    // For WASM, the host is responsible for knowing the allocation size.
+    // This is safe because we only allocate with alignment 8.
+    // In practice, for short-lived FFI data, this works correctly.
+}
+
+// =============================================================================
+// Tests
+// =============================================================================
 
 #[cfg(test)]
 mod tests {

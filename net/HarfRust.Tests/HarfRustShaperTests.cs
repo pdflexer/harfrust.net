@@ -6,11 +6,31 @@ using HarfRust;
 
 namespace HarfRust.Tests;
 
-public class HarfRustShaperTests
+public class FfiShaperTests : ShaperTestsBase<FfiBackendFixture>
 {
+    public FfiShaperTests(FfiBackendFixture fixture) : base(fixture) { }
+}
+
+public class WasmShaperTests : ShaperTestsBase<WasmBackendFixture>
+{
+    public WasmShaperTests(WasmBackendFixture fixture) : base(fixture) { }
+}
+
+public abstract class ShaperTestsBase<TFixture> : IClassFixture<TFixture> where TFixture : BackendFixture
+{
+    protected readonly TFixture Fixture;
+    protected IHarfRustBackend Backend => Fixture.Backend;
+
+    protected ShaperTestsBase(TFixture fixture)
+    {
+        Fixture = fixture;
+    }
+
     [Fact]
     public void ShapeWithFallback_UsesFallbackFontForMissingGlyphs()
     {
+        HarfRustBackend.Current = Backend;
+
         string arialPath = @"C:\Windows\Fonts\arial.ttf";
         string emojiPath = @"C:\Windows\Fonts\seguiemj.ttf";
         
@@ -20,8 +40,8 @@ public class HarfRustShaperTests
             return;
         }
 
-        using var arial = HarfRustFont.FromFile(arialPath);
-        using var emoji = HarfRustFont.FromFile(emojiPath);
+        using var arial = HarfRustFont.FromFile(arialPath, Backend);
+        using var emoji = HarfRustFont.FromFile(emojiPath, Backend);
 
         // "A" supported by Arial, "😀" (U+1F600) supported by Segoe UI Emoji
         string text = "A😀"; 
@@ -52,10 +72,12 @@ public class HarfRustShaperTests
     [Fact]
     public void ShapeWithFallback_NoFallbackNeeded()
     {
+        HarfRustBackend.Current = Backend;
+
         string arialPath = @"C:\Windows\Fonts\arial.ttf";
         if (!File.Exists(arialPath)) return;
 
-        using var arial = HarfRustFont.FromFile(arialPath);
+        using var arial = HarfRustFont.FromFile(arialPath, Backend);
         
         string text = "Hello";
         var results = HarfRustShaper.ShapeWithFallback(text, arial, null);
@@ -66,14 +88,16 @@ public class HarfRustShaperTests
     [Fact]
     public void ShapeWithFallback_MultibyteCharacters_OffsetsAreTraceable()
     {
+        HarfRustBackend.Current = Backend;
+
         string arialPath = @"C:\Windows\Fonts\arial.ttf";
         string emojiPath = @"C:\Windows\Fonts\seguiemj.ttf";
 
         if (!File.Exists(arialPath) || !File.Exists(emojiPath))
             return;
 
-        using var primary = HarfRustFont.FromFile(arialPath); 
-        using var fallback = HarfRustFont.FromFile(emojiPath);
+        using var primary = HarfRustFont.FromFile(arialPath, Backend); 
+        using var fallback = HarfRustFont.FromFile(emojiPath, Backend);
 
         // String: "A😀😀B😀C😀"
         // 'A' (primary) -> 0 (1 char)

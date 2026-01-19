@@ -23,22 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HarfRust\HarfRust.csproj" />
-  </ItemGroup>
-
-  <!-- Copy native DLL to output directory -->
-  <ItemGroup>
-    <None Include="..\..\rust\target\release\harfrust_ffi.dll" Condition="Exists('..\..\rust\target\release\harfrust_ffi.dll')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>harfrust_ffi.dll</Link>
-    </None>
-    <None Include="..\..\rust\target\release\libharfrust_ffi.so" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.so')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libharfrust_ffi.so</Link>
-    </None>
-    <None Include="..\..\rust\target\release\libharfrust_ffi.dylib" Condition="Exists('..\..\rust\target\release\libharfrust_ffi.dylib')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libharfrust_ffi.dylib</Link>
-    </None>
+    <ProjectReference Include="..\HarfRust.Wasmtime\HarfRust.Wasmtime.csproj" />
+    <ProjectReference Include="..\HarfRust.Native\HarfRust.Native.csproj" />
   </ItemGroup>
 
 </Project>
