@@ -13,11 +13,13 @@ High-performance .NET bindings for the [harfrust](https://github.com/harfbuzz/ha
 
 ## Installation
 
+```bash
 dotnet add package HarfRust
 # Native Runtime (Required for default Native backend)
 dotnet add package HarfRust.Native
 # OR Wasmtime Backend, call `using new WasmtimeBackend();` to enable
 dotnet add package HarfRust.Wasmtime
+```
 
 ## Backends
 
