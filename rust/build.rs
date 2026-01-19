@@ -4,6 +4,6 @@ fn main() {
         .csharp_dll_name("harfrust_ffi")
         .csharp_namespace("HarfRust.Bindings")
         .csharp_class_name("NativeMethods")
-        .generate_csharp_file("../net/HarfRust.Bindings/NativeMethods.g.cs")
+        .generate_csharp_file("../net/HarfRust/Bindings/NativeMethods.g.cs")
         .unwrap();
 }

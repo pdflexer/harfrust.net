@@ -8,9 +8,6 @@
     <Description>High-level .NET wrapper for harfrust text shaping library</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\HarfRust.Bindings\HarfRust.Bindings.csproj" />
-  </ItemGroup>
 
   <!-- Native Library Packaging -->
   <!-- Windows x64 -->
