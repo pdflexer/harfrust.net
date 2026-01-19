@@ -177,7 +177,7 @@ namespace HarfRust.Bindings
         ///  Frees memory allocated by harfrust_alloc.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "harfrust_dealloc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void harfrust_dealloc(int ptr);
+        internal static extern void harfrust_dealloc(int ptr, int size);
 
 
     }

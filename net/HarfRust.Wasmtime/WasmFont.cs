@@ -28,7 +28,7 @@ internal sealed class WasmFont : IBackendFont
         finally
         {
             // Note: Font copies the data internally, so we can free this
-            _context.Free(dataPtr);
+            _context.Free(dataPtr, data.Length);
         }
 
         if (_handle == 0)
@@ -136,8 +136,8 @@ internal sealed class WasmFont : IBackendFont
         }
         finally
         {
-            if (featuresPtr != 0) _context.Free(featuresPtr);
-            if (variationsPtr != 0) _context.Free(variationsPtr);
+            if (featuresPtr != 0) _context.Free(featuresPtr, features!.Length * 16);
+            if (variationsPtr != 0) _context.Free(variationsPtr, variations!.Length * 8);
         }
     }
 

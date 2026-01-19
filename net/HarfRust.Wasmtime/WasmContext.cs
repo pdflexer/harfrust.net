@@ -33,7 +33,7 @@ internal sealed class WasmContext : IDisposable
     private readonly Func<int, int> _glyphBufferIntoBuffer;
     private readonly Action<int> _glyphBufferFree;
     private readonly Func<int, int> _malloc;
-    private readonly Action<int> _free;
+    private readonly Action<int, int> _free;
 
     private bool _disposed;
 
@@ -95,7 +95,7 @@ internal sealed class WasmContext : IDisposable
         // Memory allocation functions
         _malloc = _instance.GetFunction<int, int>("harfrust_alloc")
             ?? throw new InvalidOperationException("Missing export: harfrust_alloc");
-        _free = _instance.GetAction<int>("harfrust_dealloc")
+        _free = _instance.GetAction<int, int>("harfrust_dealloc")
             ?? throw new InvalidOperationException("Missing export: harfrust_dealloc");
     }
 
@@ -134,14 +134,15 @@ internal sealed class WasmContext : IDisposable
 
     // Memory operations
     public int Malloc(int size) => _malloc(size);
-    public void Free(int ptr) => _free(ptr);
+    public void Free(int ptr, int size) => _free(ptr, size);
 
     /// <summary>
     /// Writes bytes to WASM memory at the given offset.
     /// </summary>
     public void WriteBytes(int offset, ReadOnlySpan<byte> data)
     {
-        var span = _memory.GetSpan<byte>(offset, data.Length);
+        // Use (uint) to avoid sign extension issues if pointer is > 2GB
+        var span = _memory.GetSpan<byte>((long)(uint)offset, data.Length);
         data.CopyTo(span);
     }
 
@@ -150,7 +151,7 @@ internal sealed class WasmContext : IDisposable
     /// </summary>
     public ReadOnlySpan<byte> ReadBytes(int offset, int length)
     {
-        return _memory.GetSpan<byte>(offset, length);
+        return _memory.GetSpan<byte>((long)(uint)offset, length);
     }
 
     /// <summary>

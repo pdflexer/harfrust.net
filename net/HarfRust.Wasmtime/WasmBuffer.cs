@@ -57,7 +57,7 @@ internal sealed class WasmBuffer : IBackendBuffer
         }
         finally
         {
-            _context.Free(ptr);
+            _context.Free(ptr, bytes.Length);
         }
     }
 
@@ -108,7 +108,7 @@ internal sealed class WasmBuffer : IBackendBuffer
         }
         finally
         {
-            _context.Free(ptr);
+            _context.Free(ptr, bytes.Length);
         }
     }
 

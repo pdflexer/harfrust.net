@@ -761,15 +761,18 @@ pub extern "C" fn harfrust_alloc(size: i32) -> i32 {
 
 /// Frees memory allocated by harfrust_alloc.
 #[no_mangle]
-pub unsafe extern "C" fn harfrust_dealloc(ptr: i32) {
-    if ptr == 0 {
+pub unsafe extern "C" fn harfrust_dealloc(ptr: i32, size: i32) {
+    if ptr == 0 || size <= 0 {
         return;
     }
     
-    // Note: This is a simplified free that doesn't track the original size.
-    // For WASM, the host is responsible for knowing the allocation size.
-    // This is safe because we only allocate with alignment 8.
-    // In practice, for short-lived FFI data, this works correctly.
+    let layout = match std::alloc::Layout::from_size_align(size as usize, 8) {
+        Ok(l) => l,
+        Err(_) => return,
+    };
+    
+    // SAFETY: Layout matches the one used in harfrust_alloc
+    unsafe { std::alloc::dealloc(ptr as *mut u8, layout) };
 }
 
 // =============================================================================
