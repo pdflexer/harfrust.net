@@ -1,6 +1,6 @@
 # HarfRust.NET
 
-High-performance .NET bindings for the [harfrust](https://github.com/dfrg/harfrust) text shaping engine (a Rust port of HarfBuzz). HarfRust.NET allows you to convert Unicode text into positioned glyphs for rendering, supporting complex scripts, OpenType features, variable fonts, and font fallback.
+High-performance .NET bindings for the [harfrust](https://github.com/harfbuzz/harfrust) text shaping engine (a Rust port of HarfBuzz). HarfRust.NET allows you to convert Unicode text into positioned glyphs for rendering, supporting complex scripts, OpenType features, variable fonts, and font fallback.
 
 ## Features
 
