@@ -18,6 +18,7 @@ dotnet add package HarfRust.Wasmtime
 |-------|-------------|-----------|
 | `HarfRustFont` | Represents a loaded font file (TTF/OTF/TTC). | `IDisposable` – Dispose when done. |
 | `HarfRustBuffer` | Holds input text and shaping properties. | `IDisposable` – Consumed by `Shape()`. |
+| `HarfRustShapeSession` | Reuses a shaping buffer across multiple operations. | `IDisposable` – Preferred for repeated shaping. |
 | `HarfRustGlyphBuffer` | Contains the shaping result (glyphs & positions). | `IDisposable` – Dispose when done. |
 | `HarfRustShaper` | Static class for advanced shaping with font fallback. | Static – No lifecycle management. |
 | `TextAnalyzer` | Static utilities for grapheme cluster / Text Element mapping. | Static – No lifecycle management. |
@@ -30,13 +31,11 @@ using HarfRust;
 // 1. Load a font
 using var font = HarfRustFont.FromFile("path/to/font.ttf");
 
-// 2. Create and populate a buffer
-using var buffer = new HarfRustBuffer();
-buffer.AddString("Hello World");
-buffer.GuessSegmentProperties(); // Auto-detect direction/script/lang
+// 2. Create a reusable shaping session
+using var session = new HarfRustShapeSession();
 
 // 3. Shape the text
-using var result = font.Shape(buffer); // Buffer is consumed here!
+using var result = session.Shape(font, "Hello World"); // Auto-detects segment properties by default
 
 // 4. Read results
 foreach (var info in result.GlyphInfos)
@@ -72,6 +71,7 @@ Represents a loaded font for text shaping. Owns a copy of font data internally.
 | Method | Description |
 |--------|-------------|
 | `HarfRustGlyphBuffer Shape(HarfRustBuffer buffer, Feature[]? features = null, Variation[]? variations = null)` | Shape text in buffer and return result. **Consumes the buffer.** |
+| `HarfRustGlyphBuffer Shape(HarfRustBuffer buffer, ReadOnlySpan<Feature> features, ReadOnlySpan<Variation> variations = default)` | Span-based shaping overload for low-allocation callers. |
 | `void Dispose()` | Release native resources. |
 
 #### Exceptions
@@ -104,8 +104,10 @@ var buffer = new HarfRustBuffer();
 | Method | Description |
 |--------|-------------|
 | `void AddString(string text)` | Add text to the buffer. |
+| `void Add(ReadOnlySpan<char> text)` | Add text from a span without first materializing a new string. |
 | `void Clear()` | Clear all content, reset for reuse. |
 | `void SetLanguage(string language)` | Set BCP 47 language tag (e.g., `"en"`, `"zh-Hans"`). |
+| `void SetLanguage(ReadOnlySpan<char> language)` | Span-based language setter. |
 | `void GuessSegmentProperties()` | Auto-detect and set direction, script, language from buffer content. |
 | `static uint CreateScriptTag(string tag)` | Convert 4-char script tag (e.g., `"Latn"`) to uint. |
 | `void Dispose()` | Release native resources. |
@@ -133,8 +135,49 @@ The result of text shaping, containing glyph IDs and positions.
 
 | Method | Description |
 |--------|-------------|
-| `HarfRustBuffer IntoBuffer()` | Convert back to a reusable `HarfRustBuffer`. Disposes this glyph buffer. |
+| `HarfRustBuffer IntoBuffer()` | Convert back to a reusable `HarfRustBuffer`. Disposes this glyph buffer. Not available for glyph buffers owned by `HarfRustShapeSession`. |
 | `void Dispose()` | Release native resources. |
+
+---
+
+### `HarfRustShapeSession`
+
+The preferred API for repeated shaping. Owns a reusable backend buffer and automatically reacquires it when the returned `HarfRustGlyphBuffer` is disposed.
+
+#### Constructor
+
+```csharp
+using var session = new HarfRustShapeSession();
+```
+
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Direction` | `Direction` | Get/set text direction. |
+| `Script` | `uint` | Get/set ISO 15924 script tag. |
+| `Length` | `int` | Number of characters currently staged in the session buffer. |
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `void Add(string text)` | Add text to the session buffer. |
+| `void Add(ReadOnlySpan<char> text)` | Span-based input path for low-allocation shaping. |
+| `void Clear()` | Clear the current buffer contents. |
+| `void SetLanguage(string language)` | Set BCP 47 language tag. |
+| `void SetLanguage(ReadOnlySpan<char> language)` | Span-based language setter. |
+| `void GuessSegmentProperties()` | Auto-detect direction, script, and language. |
+| `HarfRustGlyphBuffer Shape(HarfRustFont font)` | Shape the currently staged buffer contents. |
+| `HarfRustGlyphBuffer Shape(HarfRustFont font, ReadOnlySpan<Feature> features, ReadOnlySpan<Variation> variations = default)` | Shape staged content with span-based feature/variation inputs. |
+| `HarfRustGlyphBuffer Shape(HarfRustFont font, string text, ReadOnlySpan<Feature> features = default, ReadOnlySpan<Variation> variations = default, bool guessSegmentProperties = true)` | Convenience overload that clears, adds, optionally guesses properties, and shapes in one call. |
+| `HarfRustGlyphBuffer Shape(HarfRustFont font, ReadOnlySpan<char> text, ReadOnlySpan<Feature> features = default, ReadOnlySpan<Variation> variations = default, bool guessSegmentProperties = true)` | Span-based convenience overload for repeated shaping. |
+| `void Dispose()` | Release the reusable buffer. |
+
+#### Important Behavior
+- A session can only have one active `HarfRustGlyphBuffer` at a time.
+- Dispose the returned glyph buffer before calling `Add`, `Clear`, or `Shape` again.
+- Sessions are not thread-safe.
 
 ---
 
@@ -367,13 +410,13 @@ using var backend2 = new WasmtimeBackend(engine);
 ### 1. Explicit Direction/Script/Language
 
 ```csharp
-using var buffer = new HarfRustBuffer();
-buffer.AddString("مرحبا");
-buffer.Direction = Direction.RightToLeft;
-buffer.Script = HarfRustBuffer.CreateScriptTag("Arab");
-buffer.SetLanguage("ar");
+using var session = new HarfRustShapeSession();
+session.Add("مرحبا".AsSpan());
+session.Direction = Direction.RightToLeft;
+session.Script = HarfRustBuffer.CreateScriptTag("Arab");
+session.SetLanguage("ar".AsSpan());
 
-using var result = font.Shape(buffer);
+using var result = session.Shape(font);
 ```
 
 ### 2. OpenType Features (Ligatures, Small Caps)
@@ -422,25 +465,39 @@ foreach (var g in glyphs)
 }
 ```
 
-### 5. Buffer Reuse
+### 5. Buffer Reuse With `HarfRustShapeSession`
+
+```csharp
+using var session = new HarfRustShapeSession();
+
+using (var result1 = session.Shape(font, "First"))
+{
+    // Process result1...
+}
+
+using (var result2 = session.Shape(font, "Second"))
+{
+    // Reuses the same backend buffer after result1 is disposed
+}
+```
+
+### 6. Low-Level Buffer Reuse With `IntoBuffer()`
 
 ```csharp
 using var buffer = new HarfRustBuffer();
-buffer.AddString("First");
+buffer.Add("First".AsSpan());
 buffer.GuessSegmentProperties();
 
 using var result1 = font.Shape(buffer);  // Buffer consumed here
-// Process result1...
+using var buffer2 = result1.IntoBuffer(); // result1 is now disposed
 
-// Get buffer back for reuse
-using var buffer2 = result1.IntoBuffer();  // result1 is now disposed
-buffer2.AddString("Second");
+buffer2.Add("Second".AsSpan());
 buffer2.GuessSegmentProperties();
 
 using var result2 = font.Shape(buffer2);
 ```
 
-### 6. Font Collections (TTC files)
+### 7. Font Collections (TTC files)
 
 ```csharp
 // Load specific font from a TTC collection
@@ -473,7 +530,9 @@ In most Latin text, `XOffset` is 0. Common uses:
 ## Best Practices
 
 - **Always use `using`**: All core types wrap native handles and must be disposed.
-- **Buffer consumption**: `Shape()` consumes the buffer. Use `IntoBuffer()` to reclaim it.
+- **Prefer sessions for repeated shaping**: `HarfRustShapeSession` is the intended reuse API.
+- **Dispose glyph buffers promptly**: A shape session cannot be reused until its current `HarfRustGlyphBuffer` is disposed.
+- **Buffer consumption**: `Shape()` still consumes `HarfRustBuffer`. Use `IntoBuffer()` only for low-level/manual reuse.
 - **Reuse fonts**: `HarfRustFont` is expensive to create; share across shaping calls.
 - **Check for GlyphId 0**: Indicates missing glyph (.notdef). Use font fallback or substitution.
 - **Position units**: Values are in font design units. Scale by `point_size / units_per_em`.

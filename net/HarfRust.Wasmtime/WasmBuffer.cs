@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HarfRust.Wasmtime;
@@ -42,22 +44,40 @@ internal sealed class WasmBuffer : IBackendBuffer
     public void AddString(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        Add(text.AsSpan());
+    }
+
+    public void Add(ReadOnlySpan<char> text)
+    {
         ThrowIfDisposedOrConsumed();
 
-        if (string.IsNullOrEmpty(text))
+        if (text.IsEmpty)
             return;
 
-        // Convert to UTF-16 bytes
-        var bytes = Encoding.Unicode.GetBytes(text);
-        var ptr = _context.AllocateAndWrite(bytes);
+        var byteCount = checked(text.Length * sizeof(char));
+        var ptr = _context.Malloc(byteCount);
+        if (ptr == 0)
+        {
+            throw new OutOfMemoryException("Failed to allocate WASM memory.");
+        }
+
         try
         {
-            var result = 0; // harfrust_buffer_add_utf16 returns int, called via action
-            _context.BufferAddUtf16(_handle, ptr, text.Length);
+            if (!BitConverter.IsLittleEndian)
+            {
+                throw new PlatformNotSupportedException("Big-endian platforms are not supported by the Wasmtime backend.");
+            }
+
+            _context.WriteBytes(ptr, MemoryMarshal.AsBytes(text));
+            var result = _context.BufferAddUtf16(_handle, ptr, text.Length);
+            if (result != 0)
+            {
+                throw new InvalidOperationException($"Failed to add string to buffer (error code: {result})");
+            }
         }
         finally
         {
-            _context.Free(ptr, bytes.Length);
+            _context.Free(ptr, byteCount);
         }
     }
 
@@ -98,17 +118,44 @@ internal sealed class WasmBuffer : IBackendBuffer
     public void SetLanguage(string language)
     {
         ArgumentNullException.ThrowIfNull(language);
+        SetLanguage(language.AsSpan());
+    }
+
+    public void SetLanguage(ReadOnlySpan<char> language)
+    {
         ThrowIfDisposedOrConsumed();
 
-        var bytes = Encoding.UTF8.GetBytes(language + '\0');
-        var ptr = _context.AllocateAndWrite(bytes);
+        var byteCount = Encoding.UTF8.GetByteCount(language) + 1;
+        byte[]? rented = null;
+        Span<byte> bytes = byteCount <= 256
+            ? stackalloc byte[byteCount]
+            : (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+        var written = Encoding.UTF8.GetBytes(language, bytes);
+        bytes[written] = 0;
+
+        var ptr = _context.Malloc(byteCount);
+        if (ptr == 0)
+        {
+            if (rented != null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+            throw new OutOfMemoryException("Failed to allocate WASM memory.");
+        }
+
         try
         {
+            _context.WriteBytes(ptr, bytes);
             _context.BufferSetLanguage(_handle, ptr);
         }
         finally
         {
-            _context.Free(ptr, bytes.Length);
+            _context.Free(ptr, byteCount);
+            if (rented != null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
         }
     }
 

@@ -37,6 +37,11 @@ public interface IBackendBuffer : IDisposable
     void AddString(string text);
 
     /// <summary>
+    /// Adds UTF-16 text to the buffer for shaping.
+    /// </summary>
+    void Add(ReadOnlySpan<char> text);
+
+    /// <summary>
     /// Clears all content from the buffer.
     /// </summary>
     void Clear();
@@ -55,6 +60,11 @@ public interface IBackendBuffer : IDisposable
     /// Sets the language from a BCP 47 language tag.
     /// </summary>
     void SetLanguage(string language);
+
+    /// <summary>
+    /// Sets the language from a BCP 47 language tag.
+    /// </summary>
+    void SetLanguage(ReadOnlySpan<char> language);
 
     /// <summary>
     /// Guesses and sets the segment properties based on buffer contents.
@@ -89,6 +99,11 @@ public interface IBackendFont : IDisposable
     /// Shapes the text in the buffer with features and variations.
     /// </summary>
     IBackendGlyphBuffer Shape(IBackendBuffer buffer, Feature[]? features, Variation[]? variations);
+
+    /// <summary>
+    /// Shapes the text in the buffer with features and variations.
+    /// </summary>
+    IBackendGlyphBuffer Shape(IBackendBuffer buffer, ReadOnlySpan<Feature> features, ReadOnlySpan<Variation> variations = default);
 }
 
 /// <summary>

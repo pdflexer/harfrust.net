@@ -311,9 +311,86 @@ public abstract class ShapingTestsBase<TFixture> : IClassFixture<TFixture> where
         buffer.AddString("Hello");
         
         var variations = new[] { new Variation("wght", 700.0f) };
-        
+
         using var result = font.Shape(buffer, null, variations);
         
         Assert.True(result.Length > 0);
+    }
+
+    [Fact]
+    public void Shape_WithSpanFeaturesAndVariations_Works()
+    {
+        var fontData = Fixture.GetTestFontData();
+        using var font = new HarfRustFont(fontData, Backend);
+        using var buffer = new HarfRustBuffer(Backend);
+
+        buffer.Add("office".AsSpan());
+
+        Span<Feature> features = stackalloc Feature[] { Feature.StandardLigatures(true) };
+        Span<Variation> variations = stackalloc Variation[] { Variation.Weight(500) };
+
+        using var result = font.Shape(buffer, features, variations);
+
+        Assert.True(result.Length > 0);
+    }
+
+    [Fact]
+    public void ShapeSession_CanReuseBufferAcrossOperations()
+    {
+        var fontData = Fixture.GetTestFontData();
+        using var font = new HarfRustFont(fontData, Backend);
+        using var session = new HarfRustShapeSession(Backend);
+
+        using (var result = session.Shape(font, "Hello"))
+        {
+            Assert.Equal(5, result.Length);
+        }
+
+        using (var result = session.Shape(font, "World"))
+        {
+            Assert.Equal(5, result.Length);
+        }
+    }
+
+    [Fact]
+    public void ShapeSession_ThrowsWhenGlyphBufferIsStillActive()
+    {
+        var fontData = Fixture.GetTestFontData();
+        using var font = new HarfRustFont(fontData, Backend);
+        using var session = new HarfRustShapeSession(Backend);
+
+        using var result = session.Shape(font, "Hello");
+
+        Assert.Throws<InvalidOperationException>(() => session.Add("World"));
+        Assert.Throws<InvalidOperationException>(() => session.Shape(font, "World"));
+    }
+
+    [Fact]
+    public void ShapeSession_SupportsManualBufferPreparation()
+    {
+        var fontData = Fixture.GetTestFontData();
+        using var font = new HarfRustFont(fontData, Backend);
+        using var session = new HarfRustShapeSession(Backend);
+
+        session.Direction = Direction.LeftToRight;
+        session.SetLanguage("en".AsSpan());
+        session.Add("Hello".AsSpan());
+        session.GuessSegmentProperties();
+
+        using var result = session.Shape(font);
+
+        Assert.Equal(5, result.Length);
+    }
+
+    [Fact]
+    public void ShapeSession_DisposeBeforeGlyphBuffer_DisposesReturnedBuffer()
+    {
+        var fontData = Fixture.GetTestFontData();
+        using var font = new HarfRustFont(fontData, Backend);
+        var session = new HarfRustShapeSession(Backend);
+
+        var result = session.Shape(font, "Hello");
+        session.Dispose();
+        result.Dispose();
     }
 }

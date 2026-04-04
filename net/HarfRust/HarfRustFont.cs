@@ -10,6 +10,7 @@ namespace HarfRust;
 public sealed class HarfRustFont : IDisposable
 {
     private readonly IBackendFont _backend;
+    private readonly IHarfRustBackend _ownerBackend;
     private bool _disposed;
 
     /// <summary>
@@ -22,6 +23,7 @@ public sealed class HarfRustFont : IDisposable
     public HarfRustFont(byte[] data, IHarfRustBackend? backend = null)
     {
         backend ??= HarfRustBackend.Current;
+        _ownerBackend = backend;
         _backend = backend.CreateFont(data);
     }
 
@@ -36,8 +38,12 @@ public sealed class HarfRustFont : IDisposable
     public HarfRustFont(byte[] data, uint index, IHarfRustBackend? backend = null)
     {
         backend ??= HarfRustBackend.Current;
+        _ownerBackend = backend;
         _backend = backend.CreateFont(data, index);
     }
+
+    internal IBackendFont BackendFont => _backend;
+    internal IHarfRustBackend Backend => _ownerBackend;
 
     /// <summary>
     /// Creates a font from a file path.
@@ -124,6 +130,23 @@ public sealed class HarfRustFont : IDisposable
         ThrowIfDisposed();
 
         if ((features == null || features.Length == 0) && (variations == null || variations.Length == 0))
+        {
+            return Shape(buffer);
+        }
+
+        var result = _backend.Shape(buffer.BackendBuffer, features, variations);
+        return new HarfRustGlyphBuffer(result);
+    }
+
+    /// <summary>
+    /// Shapes the text in the buffer with specific OpenType features and variable font settings.
+    /// </summary>
+    public HarfRustGlyphBuffer Shape(HarfRustBuffer buffer, ReadOnlySpan<Feature> features, ReadOnlySpan<Variation> variations = default)
+    {
+        ArgumentNullException.ThrowIfNull(buffer);
+        ThrowIfDisposed();
+
+        if (features.IsEmpty && variations.IsEmpty)
         {
             return Shape(buffer);
         }

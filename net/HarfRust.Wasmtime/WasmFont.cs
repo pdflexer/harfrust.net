@@ -1,3 +1,6 @@
+using System.Buffers;
+using System.Buffers.Binary;
+
 namespace HarfRust.Wasmtime;
 
 /// <summary>
@@ -78,6 +81,18 @@ internal sealed class WasmFont : IBackendFont
             return Shape(buffer);
         }
 
+        return Shape(buffer, features.AsSpan(), variations.AsSpan());
+    }
+
+    public IBackendGlyphBuffer Shape(IBackendBuffer buffer, ReadOnlySpan<Feature> features, ReadOnlySpan<Variation> variations = default)
+    {
+        ThrowIfDisposed();
+
+        if (features.IsEmpty && variations.IsEmpty)
+        {
+            return Shape(buffer);
+        }
+
         if (buffer is not WasmBuffer wasmBuffer || wasmBuffer.Context != _context)
         {
              throw new ArgumentException("Buffer must be created from the same backend instance.", nameof(buffer));
@@ -87,44 +102,66 @@ internal sealed class WasmFont : IBackendFont
 
         int featuresPtr = 0;
         int variationsPtr = 0;
+        byte[]? rentedFeatures = null;
+        byte[]? rentedVariations = null;
 
         try
         {
             // Allocate and copy features if present
-            if (features != null && features.Length > 0)
+            if (!features.IsEmpty)
             {
-                var featureBytes = new byte[features.Length * 16]; // 4 uints per feature
+                var byteCount = features.Length * 16;
+                Span<byte> featureBytes = byteCount <= 256
+                    ? stackalloc byte[byteCount]
+                    : (rentedFeatures = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
                 for (int i = 0; i < features.Length; i++)
                 {
                     var offset = i * 16;
-                    BitConverter.TryWriteBytes(featureBytes.AsSpan(offset), features[i].Tag);
-                    BitConverter.TryWriteBytes(featureBytes.AsSpan(offset + 4), features[i].Value);
-                    BitConverter.TryWriteBytes(featureBytes.AsSpan(offset + 8), features[i].Start);
-                    BitConverter.TryWriteBytes(featureBytes.AsSpan(offset + 12), features[i].End);
+                    BinaryPrimitives.WriteUInt32LittleEndian(featureBytes.Slice(offset, 4), features[i].Tag);
+                    BinaryPrimitives.WriteUInt32LittleEndian(featureBytes.Slice(offset + 4, 4), features[i].Value);
+                    BinaryPrimitives.WriteUInt32LittleEndian(featureBytes.Slice(offset + 8, 4), features[i].Start);
+                    BinaryPrimitives.WriteUInt32LittleEndian(featureBytes.Slice(offset + 12, 4), features[i].End);
                 }
-                featuresPtr = _context.AllocateAndWrite(featureBytes);
+
+                featuresPtr = _context.Malloc(byteCount);
+                if (featuresPtr == 0)
+                {
+                    throw new OutOfMemoryException("Failed to allocate WASM memory.");
+                }
+                _context.WriteBytes(featuresPtr, featureBytes);
             }
 
             // Allocate and copy variations if present
-            if (variations != null && variations.Length > 0)
+            if (!variations.IsEmpty)
             {
-                var variationBytes = new byte[variations.Length * 8]; // uint + float per variation
+                var byteCount = variations.Length * 8;
+                Span<byte> variationBytes = byteCount <= 256
+                    ? stackalloc byte[byteCount]
+                    : (rentedVariations = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
                 for (int i = 0; i < variations.Length; i++)
                 {
                     var offset = i * 8;
-                    BitConverter.TryWriteBytes(variationBytes.AsSpan(offset), variations[i].Tag);
-                    BitConverter.TryWriteBytes(variationBytes.AsSpan(offset + 4), variations[i].Value);
+                    BinaryPrimitives.WriteUInt32LittleEndian(variationBytes.Slice(offset, 4), variations[i].Tag);
+                    BinaryPrimitives.WriteSingleLittleEndian(variationBytes.Slice(offset + 4, 4), variations[i].Value);
                 }
-                variationsPtr = _context.AllocateAndWrite(variationBytes);
+
+                variationsPtr = _context.Malloc(byteCount);
+                if (variationsPtr == 0)
+                {
+                    throw new OutOfMemoryException("Failed to allocate WASM memory.");
+                }
+                _context.WriteBytes(variationsPtr, variationBytes);
             }
 
             var glyphBufferHandle = _context.ShapeFull(
                 _handle,
                 (int)bufferHandle,
                 featuresPtr,
-                features == null ? 0 : features.Length,
+                features.Length,
                 variationsPtr,
-                variations == null ? 0 : variations.Length
+                variations.Length
             );
 
             if (glyphBufferHandle == 0)
@@ -136,8 +173,10 @@ internal sealed class WasmFont : IBackendFont
         }
         finally
         {
-            if (featuresPtr != 0) _context.Free(featuresPtr, features!.Length * 16);
-            if (variationsPtr != 0) _context.Free(variationsPtr, variations!.Length * 8);
+            if (featuresPtr != 0) _context.Free(featuresPtr, features.Length * 16);
+            if (variationsPtr != 0) _context.Free(variationsPtr, variations.Length * 8);
+            if (rentedFeatures != null) ArrayPool<byte>.Shared.Return(rentedFeatures);
+            if (rentedVariations != null) ArrayPool<byte>.Shared.Return(rentedVariations);
         }
     }
 

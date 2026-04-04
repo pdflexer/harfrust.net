@@ -48,6 +48,12 @@ public class ShapingBenchmarks
 
     [Benchmark]
     public void Wasm_Shape() => Shape(_wasmFont, _wasmBackend);
+
+    [Benchmark]
+    public void Native_ShapeSession() => ShapeWithSession(_nativeFont, _nativeBackend);
+
+    [Benchmark]
+    public void Wasm_ShapeSession() => ShapeWithSession(_wasmFont, _wasmBackend);
     
     private void Shape(HarfRustFont font, IHarfRustBackend backend)
     {
@@ -56,6 +62,13 @@ public class ShapingBenchmarks
         buffer.AddString(_text);
         buffer.GuessSegmentProperties();
         using var result = font.Shape(buffer); // Font also knows its backend
+        var count = result.Length;
+    }
+
+    private void ShapeWithSession(HarfRustFont font, IHarfRustBackend backend)
+    {
+        using var session = new HarfRustShapeSession(backend);
+        using var result = session.Shape(font, _text);
         var count = result.Length;
     }
 }

@@ -1,4 +1,5 @@
 using HarfRust.Bindings;
+using System.Buffers;
 
 namespace HarfRust.Bindings;
 
@@ -82,13 +83,32 @@ internal sealed unsafe class NativeFont : IBackendFont
             return Shape(buffer);
         }
 
+        return Shape(buffer, features.AsSpan(), variations.AsSpan());
+    }
+
+    public IBackendGlyphBuffer Shape(IBackendBuffer buffer, ReadOnlySpan<Feature> features, ReadOnlySpan<Variation> variations = default)
+    {
+        ArgumentNullException.ThrowIfNull(buffer);
+        ThrowIfDisposed();
+
+        if (features.IsEmpty && variations.IsEmpty)
+        {
+            return Shape(buffer);
+        }
+
         var bufferHandle = buffer.ConsumeHandle();
 
-        // Map features
-        Bindings.HarfRustFeature[]? nativeFeatures = null;
-        if (features != null && features.Length > 0)
+        Bindings.HarfRustFeature[]? rentedFeatures = null;
+        Bindings.HarfRustVariation[]? rentedVariations = null;
+        Span<Bindings.HarfRustFeature> nativeFeatures = features.Length <= 8
+            ? stackalloc Bindings.HarfRustFeature[features.Length]
+            : (rentedFeatures = ArrayPool<Bindings.HarfRustFeature>.Shared.Rent(features.Length)).AsSpan(0, features.Length);
+        Span<Bindings.HarfRustVariation> nativeVariations = variations.Length <= 8
+            ? stackalloc Bindings.HarfRustVariation[variations.Length]
+            : (rentedVariations = ArrayPool<Bindings.HarfRustVariation>.Shared.Rent(variations.Length)).AsSpan(0, variations.Length);
+
+        try
         {
-            nativeFeatures = new Bindings.HarfRustFeature[features.Length];
             for (int i = 0; i < features.Length; i++)
             {
                 nativeFeatures[i] = new Bindings.HarfRustFeature
@@ -99,13 +119,7 @@ internal sealed unsafe class NativeFont : IBackendFont
                     end = features[i].End
                 };
             }
-        }
 
-        // Map variations
-        Bindings.HarfRustVariation[]? nativeVariations = null;
-        if (variations != null && variations.Length > 0)
-        {
-            nativeVariations = new Bindings.HarfRustVariation[variations.Length];
             for (int i = 0; i < variations.Length; i++)
             {
                 nativeVariations[i] = new Bindings.HarfRustVariation
@@ -114,29 +128,41 @@ internal sealed unsafe class NativeFont : IBackendFont
                     value = variations[i].Value
                 };
             }
+
+            Bindings.HarfRustGlyphBuffer* glyphBuffer;
+
+            fixed (Bindings.HarfRustFeature* featPtr = nativeFeatures)
+            fixed (Bindings.HarfRustVariation* varPtr = nativeVariations)
+            {
+                glyphBuffer = NativeMethods.harfrust_shape_full(
+                    _handle,
+                    (Bindings.HarfRustBuffer*)bufferHandle,
+                    features.IsEmpty ? null : featPtr,
+                    (uint)features.Length,
+                    variations.IsEmpty ? null : varPtr,
+                    (uint)variations.Length
+                );
+            }
+
+            if (glyphBuffer == null)
+            {
+                throw new InvalidOperationException("Shaping failed.");
+            }
+
+            return new NativeGlyphBuffer(glyphBuffer);
         }
-
-        Bindings.HarfRustGlyphBuffer* glyphBuffer;
-
-        fixed (Bindings.HarfRustFeature* featPtr = nativeFeatures)
-        fixed (Bindings.HarfRustVariation* varPtr = nativeVariations)
+        finally
         {
-            glyphBuffer = NativeMethods.harfrust_shape_full(
-                _handle,
-                (Bindings.HarfRustBuffer*)bufferHandle,
-                featPtr,
-                nativeFeatures == null ? 0 : (uint)nativeFeatures.Length,
-                varPtr,
-                nativeVariations == null ? 0 : (uint)nativeVariations.Length
-            );
-        }
+            if (rentedFeatures != null)
+            {
+                ArrayPool<Bindings.HarfRustFeature>.Shared.Return(rentedFeatures);
+            }
 
-        if (glyphBuffer == null)
-        {
-            throw new InvalidOperationException("Shaping failed.");
+            if (rentedVariations != null)
+            {
+                ArrayPool<Bindings.HarfRustVariation>.Shared.Return(rentedVariations);
+            }
         }
-
-        return new NativeGlyphBuffer(glyphBuffer);
     }
 
     private void ThrowIfDisposed()

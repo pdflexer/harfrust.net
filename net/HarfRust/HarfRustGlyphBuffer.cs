@@ -6,11 +6,18 @@ namespace HarfRust;
 public sealed class HarfRustGlyphBuffer : IDisposable
 {
     private readonly IBackendGlyphBuffer _backend;
+    private readonly Action<IBackendBuffer>? _bufferReturn;
     private bool _disposed;
 
     internal HarfRustGlyphBuffer(IBackendGlyphBuffer backend)
+        : this(backend, null)
+    {
+    }
+
+    internal HarfRustGlyphBuffer(IBackendGlyphBuffer backend, Action<IBackendBuffer>? bufferReturn)
     {
         _backend = backend;
+        _bufferReturn = bufferReturn;
     }
 
     /// <summary>
@@ -66,6 +73,10 @@ public sealed class HarfRustGlyphBuffer : IDisposable
     public HarfRustBuffer IntoBuffer()
     {
         ThrowIfDisposed();
+        if (_bufferReturn != null)
+        {
+            throw new InvalidOperationException("This glyph buffer is owned by a shape session and cannot be converted into a standalone buffer.");
+        }
 
         var buffer = _backend.IntoBuffer();
         _disposed = true;
@@ -88,7 +99,15 @@ public sealed class HarfRustGlyphBuffer : IDisposable
     {
         if (!_disposed)
         {
-            _backend.Dispose();
+            if (_bufferReturn == null)
+            {
+                _backend.Dispose();
+            }
+            else
+            {
+                var buffer = _backend.IntoBuffer();
+                _bufferReturn(buffer);
+            }
             _disposed = true;
         }
     }

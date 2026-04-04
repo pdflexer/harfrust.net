@@ -36,7 +36,8 @@ public static class HarfRustShaper
             fonts.AddRange(fallbackFonts);
         }
 
-        return ShapeRecursive(text, 0, text.Length, fonts, 0, features, variations);
+        using var session = new HarfRustShapeSession(primaryFont.Backend);
+        return ShapeRecursive(text, 0, text.Length, fonts, 0, features, variations, session);
     }
 
     private static ShapedGlyph[] ShapeRecursive(
@@ -46,36 +47,36 @@ public static class HarfRustShaper
         List<HarfRustFont> fonts,
         int fontIndex,
         Feature[]? features,
-        Variation[]? variations)
+        Variation[]? variations,
+        HarfRustShapeSession session)
     {
         if (length == 0) return Array.Empty<ShapedGlyph>();
 
         var font = fonts[fontIndex];
-        var segment = fullText.Substring(start, length);
 
         // Shape this segment
-        using var buffer = new HarfRustBuffer();
-        buffer.AddString(segment);
-        buffer.GuessSegmentProperties();
+        List<ShapedGlyph> shapedGlyphs;
 
-        using var result = font.Shape(buffer, features, variations);
-        var infos = result.GlyphInfos;
-        var positions = result.GlyphPositions;
-
-        var shapedGlyphs = new List<ShapedGlyph>(infos.Length);
-        
-        // Convert to ShapedGlyph and adjust clusters
-        for (int i = 0; i < infos.Length; i++)
+        using (var result = session.Shape(font, fullText.AsSpan(start, length), features, variations, guessSegmentProperties: true))
         {
-            shapedGlyphs.Add(new ShapedGlyph(
-                infos[i].GlyphId,
-                infos[i].Cluster + (uint)start, // Adjust cluster relative to full text
-                positions[i].XAdvance,
-                positions[i].YAdvance,
-                positions[i].XOffset,
-                positions[i].YOffset,
-                font
-            ));
+            var infos = result.GlyphInfos;
+            var positions = result.GlyphPositions;
+
+            shapedGlyphs = new List<ShapedGlyph>(infos.Length);
+
+            // Convert to ShapedGlyph and adjust clusters while the result is alive.
+            for (int i = 0; i < infos.Length; i++)
+            {
+                shapedGlyphs.Add(new ShapedGlyph(
+                    infos[i].GlyphId,
+                    infos[i].Cluster + (uint)start, // Adjust cluster relative to full text
+                    positions[i].XAdvance,
+                    positions[i].YAdvance,
+                    positions[i].XOffset,
+                    positions[i].YOffset,
+                    font
+                ));
+            }
         }
 
         // If this is the last font, or no missing glyphs, return results
@@ -144,7 +145,8 @@ public static class HarfRustShaper
                 fonts, 
                 fontIndex + 1, 
                 features, 
-                variations
+                variations,
+                session
             );
 
             finalResult.AddRange(fallbackResult);

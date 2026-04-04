@@ -75,7 +75,17 @@ public sealed class HarfRustBuffer : IDisposable
     {
         ArgumentNullException.ThrowIfNull(text);
         ThrowIfDisposedOrConsumed();
-        _backend.AddString(text);
+        _backend.Add(text);
+    }
+
+    /// <summary>
+    /// Adds UTF-16 text to the buffer for shaping.
+    /// </summary>
+    /// <param name="text">The text to add.</param>
+    public void Add(ReadOnlySpan<char> text)
+    {
+        ThrowIfDisposedOrConsumed();
+        _backend.Add(text);
     }
 
     /// <summary>
@@ -129,6 +139,16 @@ public sealed class HarfRustBuffer : IDisposable
     public void SetLanguage(string language)
     {
         ArgumentNullException.ThrowIfNull(language);
+        ThrowIfDisposedOrConsumed();
+        _backend.SetLanguage(language);
+    }
+
+    /// <summary>
+    /// Sets the language of the buffer from a BCP 47 language tag span.
+    /// </summary>
+    /// <param name="language">The language tag (e.g., "en", "zh-Hans").</param>
+    public void SetLanguage(ReadOnlySpan<char> language)
+    {
         ThrowIfDisposedOrConsumed();
         _backend.SetLanguage(language);
     }

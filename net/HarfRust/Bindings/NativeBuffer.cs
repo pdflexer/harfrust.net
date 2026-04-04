@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 using HarfRust.Bindings;
@@ -39,9 +40,14 @@ internal sealed unsafe class NativeBuffer : IBackendBuffer
     public void AddString(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        Add(text.AsSpan());
+    }
+
+    public void Add(ReadOnlySpan<char> text)
+    {
         ThrowIfDisposedOrConsumed();
 
-        if (string.IsNullOrEmpty(text))
+        if (text.IsEmpty)
         {
             return;
         }
@@ -93,15 +99,38 @@ internal sealed unsafe class NativeBuffer : IBackendBuffer
     public void SetLanguage(string language)
     {
         ArgumentNullException.ThrowIfNull(language);
+        SetLanguage(language.AsSpan());
+    }
+
+    public void SetLanguage(ReadOnlySpan<char> language)
+    {
         ThrowIfDisposedOrConsumed();
 
-        var bytes = Encoding.UTF8.GetBytes(language + '\0');
-        fixed (byte* ptr = bytes)
+        var byteCount = Encoding.UTF8.GetByteCount(language) + 1;
+        byte[]? rented = null;
+        Span<byte> bytes = byteCount <= 256
+            ? stackalloc byte[byteCount]
+            : (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+        try
         {
-            var result = NativeMethods.harfrust_buffer_set_language(_handle, ptr);
-            if (result != 0)
+            var written = Encoding.UTF8.GetBytes(language, bytes);
+            bytes[written] = 0;
+
+            fixed (byte* ptr = bytes)
             {
-                throw new ArgumentException($"Invalid language tag: {language} (error code: {result})", nameof(language));
+                var result = NativeMethods.harfrust_buffer_set_language(_handle, ptr);
+                if (result != 0)
+                {
+                    throw new ArgumentException($"Invalid language tag: {language.ToString()} (error code: {result})", nameof(language));
+                }
+            }
+        }
+        finally
+        {
+            if (rented != null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
             }
         }
     }

@@ -86,6 +86,17 @@ public abstract class BufferTestsBase<TFixture> : IClassFixture<TFixture> where 
     }
 
     [Fact]
+    public void Add_Span_IncreasesLength()
+    {
+        using var buffer = new HarfRustBuffer(Backend);
+        var text = "prefix-Hello-suffix".AsSpan(7, 5);
+
+        buffer.Add(text);
+
+        Assert.Equal(5, buffer.Length);
+    }
+
+    [Fact]
     public void Dispose_CanBeCalledMultipleTimes()
     {
         var buffer = new HarfRustBuffer(Backend);
@@ -178,6 +189,13 @@ public abstract class BufferTestsBase<TFixture> : IClassFixture<TFixture> where 
     {
         using var buffer = new HarfRustBuffer(Backend);
         Assert.Throws<ArgumentNullException>(() => buffer.SetLanguage(null!));
+    }
+
+    [Fact]
+    public void SetLanguage_Span_Succeeds()
+    {
+        using var buffer = new HarfRustBuffer(Backend);
+        buffer.SetLanguage("en-US".AsSpan());
     }
 
     [Fact]
