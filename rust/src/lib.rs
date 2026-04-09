@@ -129,11 +129,9 @@ impl FontInner {
 
 /// Opaque wrapper that owns font data and provides shaping capabilities.
 pub struct HarfRustFont {
-    inner: FontInner,
-    // These are constructed after FontInner and borrow from it.
-    // We use raw pointers to avoid lifetime issues in FFI.
-    // SAFETY: font_ref and shaper_data point to data owned by inner.data
-    // and are only valid while HarfRustFont is alive.
+    font_ref: harfrust::FontRef<'static>,
+    shaper_data: harfrust::ShaperData,
+    _inner: FontInner,
 }
 
 /// Opaque wrapper around harfrust's GlyphBuffer (shaping result).
@@ -142,6 +140,54 @@ pub struct HarfRustGlyphBuffer {
     // Cache for FFI-safe glyph data
     infos_cache: Vec<HarfRustGlyphInfo>,
     positions_cache: Vec<HarfRustGlyphPosition>,
+}
+
+fn wrap_glyph_buffer(glyph_buffer: harfrust::GlyphBuffer) -> *mut HarfRustGlyphBuffer {
+    let glyph_infos = glyph_buffer.glyph_infos();
+    let glyph_positions = glyph_buffer.glyph_positions();
+
+    let mut infos = Vec::with_capacity(glyph_infos.len());
+    for info in glyph_infos {
+        infos.push(HarfRustGlyphInfo {
+            glyph_id: info.glyph_id,
+            cluster: info.cluster,
+        });
+    }
+
+    let mut positions = Vec::with_capacity(glyph_positions.len());
+    for pos in glyph_positions {
+        positions.push(HarfRustGlyphPosition {
+            x_advance: pos.x_advance,
+            y_advance: pos.y_advance,
+            x_offset: pos.x_offset,
+            y_offset: pos.y_offset,
+        });
+    }
+
+    let wrapper = HarfRustGlyphBuffer {
+        inner: glyph_buffer,
+        infos_cache: infos,
+        positions_cache: positions,
+    };
+
+    Box::into_raw(Box::new(wrapper))
+}
+
+fn create_font(data_vec: Vec<u8>, index: Option<u32>) -> Option<HarfRustFont> {
+    let inner = FontInner::new(data_vec);
+    let data: &'static [u8] = unsafe { std::mem::transmute(inner.data()) };
+
+    let font_ref = match index {
+        Some(index) => harfrust::FontRef::from_index(data, index).ok()?,
+        None => harfrust::FontRef::new(data).ok()?,
+    };
+    let shaper_data = harfrust::ShaperData::new(&font_ref);
+
+    Some(HarfRustFont {
+        font_ref,
+        shaper_data,
+        _inner: inner,
+    })
 }
 
 // =============================================================================
@@ -358,15 +404,11 @@ pub unsafe extern "C" fn harfrust_font_from_data(data: *const u8, len: i32) -> *
 
     let slice = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let data_vec = slice.to_vec();
-    
-    // Verify the font data is valid before accepting it
-    if harfrust::FontRef::new(&data_vec).is_err() {
-        return std::ptr::null_mut();
-    }
 
-    let inner = FontInner::new(data_vec);
-    let wrapper = HarfRustFont { inner };
-    Box::into_raw(Box::new(wrapper))
+    match create_font(data_vec, None) {
+        Some(wrapper) => Box::into_raw(Box::new(wrapper)),
+        None => std::ptr::null_mut(),
+    }
 }
 
 /// Creates a font from raw font data at a specific index (for font collections).
@@ -382,15 +424,11 @@ pub unsafe extern "C" fn harfrust_font_from_data_index(
 
     let slice = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let data_vec = slice.to_vec();
-    
-    // Verify the font data is valid before accepting it
-    if harfrust::FontRef::from_index(&data_vec, index).is_err() {
-        return std::ptr::null_mut();
-    }
 
-    let inner = FontInner::new(data_vec);
-    let wrapper = HarfRustFont { inner };
-    Box::into_raw(Box::new(wrapper))
+    match create_font(data_vec, Some(index)) {
+        Some(wrapper) => Box::into_raw(Box::new(wrapper)),
+        None => std::ptr::null_mut(),
+    }
 }
 
 /// Returns the font's units per em.
@@ -401,16 +439,7 @@ pub unsafe extern "C" fn harfrust_font_units_per_em(font: *const HarfRustFont) -
     }
 
     let font_wrapper = unsafe { &*font };
-    let data = font_wrapper.inner.data();
-    
-    // Parse the font temporarily
-    let font_ref = match harfrust::FontRef::new(data) {
-        Ok(f) => f,
-        Err(_) => return -1,
-    };
-    
-    let shaper_data = harfrust::ShaperData::new(&font_ref);
-    let shaper = shaper_data.shaper(&font_ref).build();
+    let shaper = font_wrapper.shaper_data.shaper(&font_wrapper.font_ref).build();
     shaper.units_per_em()
 }
 
@@ -438,16 +467,7 @@ pub unsafe extern "C" fn harfrust_shape(
 
     let font_wrapper = unsafe { &*font };
     let mut buffer_box = unsafe { Box::from_raw(buffer) };
-    let data = font_wrapper.inner.data();
-
-    // Parse the font for this shaping operation
-    let font_ref = match harfrust::FontRef::new(data) {
-        Ok(f) => f,
-        Err(_) => return std::ptr::null_mut(),
-    };
-    
-    let shaper_data = harfrust::ShaperData::new(&font_ref);
-    let shaper = shaper_data.shaper(&font_ref).build();
+    let shaper = font_wrapper.shaper_data.shaper(&font_wrapper.font_ref).build();
 
     // Guess segment properties only if direction is not explicitly set
     if buffer_box.inner.direction() == harfrust::Direction::Invalid {
@@ -457,34 +477,7 @@ pub unsafe extern "C" fn harfrust_shape(
     // Perform shaping
     let glyph_buffer = shaper.shape(buffer_box.inner, &[]);
 
-    // Convert to FFI-safe format
-    let infos: Vec<HarfRustGlyphInfo> = glyph_buffer
-        .glyph_infos()
-        .iter()
-        .map(|info| HarfRustGlyphInfo {
-            glyph_id: info.glyph_id,
-            cluster: info.cluster,
-        })
-        .collect();
-
-    let positions: Vec<HarfRustGlyphPosition> = glyph_buffer
-        .glyph_positions()
-        .iter()
-        .map(|pos| HarfRustGlyphPosition {
-            x_advance: pos.x_advance,
-            y_advance: pos.y_advance,
-            x_offset: pos.x_offset,
-            y_offset: pos.y_offset,
-        })
-        .collect();
-
-    let wrapper = HarfRustGlyphBuffer {
-        inner: glyph_buffer,
-        infos_cache: infos,
-        positions_cache: positions,
-    };
-
-    Box::into_raw(Box::new(wrapper))
+    wrap_glyph_buffer(glyph_buffer)
 }
 
 /// Shapes text in a buffer using the given font and OpenType features.
@@ -501,16 +494,7 @@ pub unsafe extern "C" fn harfrust_shape_with_features(
 
     let font_wrapper = unsafe { &*font };
     let mut buffer_box = unsafe { Box::from_raw(buffer) };
-    let data = font_wrapper.inner.data();
-
-    // Parse the font for this shaping operation
-    let font_ref = match harfrust::FontRef::new(data) {
-        Ok(f) => f,
-        Err(_) => return std::ptr::null_mut(),
-    };
-    
-    let shaper_data = harfrust::ShaperData::new(&font_ref);
-    let shaper = shaper_data.shaper(&font_ref).build();
+    let shaper = font_wrapper.shaper_data.shaper(&font_wrapper.font_ref).build();
 
     // Guess segment properties only if direction is not explicitly set
     if buffer_box.inner.direction() == harfrust::Direction::Invalid {
@@ -534,34 +518,7 @@ pub unsafe extern "C" fn harfrust_shape_with_features(
     // Perform shaping
     let glyph_buffer = shaper.shape(buffer_box.inner, &rust_features);
 
-    // Convert to FFI-safe format
-    let infos: Vec<HarfRustGlyphInfo> = glyph_buffer
-        .glyph_infos()
-        .iter()
-        .map(|info| HarfRustGlyphInfo {
-            glyph_id: info.glyph_id,
-            cluster: info.cluster,
-        })
-        .collect();
-
-    let positions: Vec<HarfRustGlyphPosition> = glyph_buffer
-        .glyph_positions()
-        .iter()
-        .map(|pos| HarfRustGlyphPosition {
-            x_advance: pos.x_advance,
-            y_advance: pos.y_advance,
-            x_offset: pos.x_offset,
-            y_offset: pos.y_offset,
-        })
-        .collect();
-
-    let wrapper = HarfRustGlyphBuffer {
-        inner: glyph_buffer,
-        infos_cache: infos,
-        positions_cache: positions,
-    };
-
-    Box::into_raw(Box::new(wrapper))
+    wrap_glyph_buffer(glyph_buffer)
 }
 
 /// Shapes text in a buffer using the given font, features, and variable font settings.
@@ -580,13 +537,6 @@ pub unsafe extern "C" fn harfrust_shape_full(
 
     let font_wrapper = unsafe { &*font };
     let mut buffer_box = unsafe { Box::from_raw(buffer) };
-    let data = font_wrapper.inner.data();
-
-    // Parse the font for this shaping operation
-    let font_ref = match harfrust::FontRef::new(data) {
-        Ok(f) => f,
-        Err(_) => return std::ptr::null_mut(),
-    };
     
     // Handle variable font instance
     let instance_opt = if !variations.is_null() && num_variations > 0 {
@@ -597,13 +547,12 @@ pub unsafe extern "C" fn harfrust_shape_full(
             (tag, v.value).into()
         }).collect();
         
-        Some(harfrust::ShaperInstance::from_variations(&font_ref, rust_variations))
+        Some(harfrust::ShaperInstance::from_variations(&font_wrapper.font_ref, rust_variations))
     } else {
         None
     };
 
-    let shaper_data = harfrust::ShaperData::new(&font_ref);
-    let mut builder = shaper_data.shaper(&font_ref);
+    let mut builder = font_wrapper.shaper_data.shaper(&font_wrapper.font_ref);
     
     if let Some(inst) = &instance_opt {
         builder = builder.instance(Some(inst));
@@ -633,34 +582,7 @@ pub unsafe extern "C" fn harfrust_shape_full(
     // Perform shaping
     let glyph_buffer = shaper.shape(buffer_box.inner, &rust_features);
 
-    // Convert to FFI-safe format
-    let infos: Vec<HarfRustGlyphInfo> = glyph_buffer
-        .glyph_infos()
-        .iter()
-        .map(|info| HarfRustGlyphInfo {
-            glyph_id: info.glyph_id,
-            cluster: info.cluster,
-        })
-        .collect();
-
-    let positions: Vec<HarfRustGlyphPosition> = glyph_buffer
-        .glyph_positions()
-        .iter()
-        .map(|pos| HarfRustGlyphPosition {
-            x_advance: pos.x_advance,
-            y_advance: pos.y_advance,
-            x_offset: pos.x_offset,
-            y_offset: pos.y_offset,
-        })
-        .collect();
-
-    let wrapper = HarfRustGlyphBuffer {
-        inner: glyph_buffer,
-        infos_cache: infos,
-        positions_cache: positions,
-    };
-
-    Box::into_raw(Box::new(wrapper))
+    wrap_glyph_buffer(glyph_buffer)
 }
 
 // =============================================================================

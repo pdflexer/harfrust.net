@@ -8,6 +8,7 @@ namespace HarfRust.Bindings;
 internal sealed unsafe class NativeGlyphBuffer : IBackendGlyphBuffer
 {
     private Bindings.HarfRustGlyphBuffer* _handle;
+    private int _length = -1;
     private bool _disposed;
 
     internal NativeGlyphBuffer(Bindings.HarfRustGlyphBuffer* handle)
@@ -20,7 +21,7 @@ internal sealed unsafe class NativeGlyphBuffer : IBackendGlyphBuffer
         get
         {
             ThrowIfDisposed();
-            return NativeMethods.harfrust_glyph_buffer_len(_handle);
+            return GetLength();
         }
     }
 
@@ -30,7 +31,7 @@ internal sealed unsafe class NativeGlyphBuffer : IBackendGlyphBuffer
         {
             ThrowIfDisposed();
             var ptr = NativeMethods.harfrust_glyph_buffer_get_infos(_handle);
-            var len = NativeMethods.harfrust_glyph_buffer_len(_handle);
+            var len = GetLength();
             if (ptr == null || len <= 0)
             {
                 return ReadOnlySpan<GlyphInfo>.Empty;
@@ -45,7 +46,7 @@ internal sealed unsafe class NativeGlyphBuffer : IBackendGlyphBuffer
         {
             ThrowIfDisposed();
             var ptr = NativeMethods.harfrust_glyph_buffer_get_positions(_handle);
-            var len = NativeMethods.harfrust_glyph_buffer_len(_handle);
+            var len = GetLength();
             if (ptr == null || len <= 0)
             {
                 return ReadOnlySpan<GlyphPosition>.Empty;
@@ -76,6 +77,16 @@ internal sealed unsafe class NativeGlyphBuffer : IBackendGlyphBuffer
         {
             throw new ObjectDisposedException(nameof(NativeGlyphBuffer));
         }
+    }
+
+    private int GetLength()
+    {
+        if (_length < 0)
+        {
+            _length = NativeMethods.harfrust_glyph_buffer_len(_handle);
+        }
+
+        return _length;
     }
 
     public void Dispose()

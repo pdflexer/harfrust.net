@@ -2,9 +2,10 @@ name: Build and Pack
 
 on:
   push:
-    branches: [ "main", "releases/*" ]
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]
   pull_request:
-    branches: [ "main", "releases/*" ]
+    branches: [ "main" ]
 
 jobs:
   build-native-windows:
@@ -110,10 +111,10 @@ jobs:
       shell: bash
       run: |
         VERSION="0.0.1-preview"
-        REF_NAME="${{ github.ref_name }}"
-        
-        # Check for refs/heads/releases/X.Y.Z
-        if [[ "$REF_NAME" =~ ^releases/([0-9]+\.[0-9]+\.[0-9]+(-.*)?)$ ]]; then
+        REF="${{ github.ref }}"
+
+        # Publish only on version tags (v1.2.3 or v1.2.3-suffix)
+        if [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(-.*)?)$ ]]; then
           VERSION=${BASH_REMATCH[1]}
           echo "is_valid_release=true" >> $GITHUB_OUTPUT
         fi
@@ -152,3 +153,9 @@ jobs:
         dotnet nuget push net/HarfRust.Native/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         dotnet nuget push net/HarfRust.Wasmtime/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         dotnet nuget push net/HarfRust/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Create GitHub Release
+      if: steps.check_release.outputs.is_valid_release == 'true'
+      uses: softprops/action-gh-release@v2
+      with:
+        generate_release_notes: true
